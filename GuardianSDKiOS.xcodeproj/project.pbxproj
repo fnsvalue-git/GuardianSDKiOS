@@ -11,6 +11,7 @@
 		2353C557242A03FF0053E1D4 /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2353C54A2429EC9F0053E1D4 /* Alamofire.framework */; };
 		2353C55A242A04000053E1D4 /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2353C54D2429ECA50053E1D4 /* CryptoSwift.framework */; };
 		23ACF438233322B800FA4246 /* GuardianFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 23ACF436233322B800FA4246 /* GuardianFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6B141BD024BFE9D400A93261 /* LocalizationMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B141BCF24BFE9D400A93261 /* LocalizationMessage.swift */; };
 		6B3901AD24B70D1C00473869 /* TranslationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3901AC24B70D1C00473869 /* TranslationModel.swift */; };
 		6B83CAD424B565AF0073C2F8 /* BiometricManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B83CAD324B565AF0073C2F8 /* BiometricManager.swift */; };
 		6BF17DDE24B403C5000C3C01 /* GuardianService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BF17DDD24B403C5000C3C01 /* GuardianService.swift */; };
@@ -23,6 +24,7 @@
 		23ACF433233322B800FA4246 /* GuardianSDKiOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GuardianSDKiOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		23ACF436233322B800FA4246 /* GuardianFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GuardianFramework.h; sourceTree = "<group>"; };
 		23ACF437233322B800FA4246 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6B141BCF24BFE9D400A93261 /* LocalizationMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationMessage.swift; sourceTree = "<group>"; };
 		6B3901AC24B70D1C00473869 /* TranslationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationModel.swift; sourceTree = "<group>"; };
 		6B83CAD324B565AF0073C2F8 /* BiometricManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricManager.swift; sourceTree = "<group>"; };
 		6BF17DDD24B403C5000C3C01 /* GuardianService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianService.swift; sourceTree = "<group>"; };
@@ -67,6 +69,7 @@
 				6BF17DDD24B403C5000C3C01 /* GuardianService.swift */,
 				6B83CAD324B565AF0073C2F8 /* BiometricManager.swift */,
 				6B3901AC24B70D1C00473869 /* TranslationModel.swift */,
+				6B141BCF24BFE9D400A93261 /* LocalizationMessage.swift */,
 			);
 			path = GuardianSDKiOS;
 			sourceTree = "<group>";
@@ -161,6 +164,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6B141BD024BFE9D400A93261 /* LocalizationMessage.swift in Sources */,
 				2333280323B4A4580005F329 /* KeyChainService.swift in Sources */,
 				6B3901AD24B70D1C00473869 /* TranslationModel.swift in Sources */,
 				6BF17DDE24B403C5000C3C01 /* GuardianService.swift in Sources */,

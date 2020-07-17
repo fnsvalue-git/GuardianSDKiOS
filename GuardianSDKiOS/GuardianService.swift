@@ -16,22 +16,57 @@ public enum RtCode : Int {
     case AUTH_SUCCESS = 0
     case AUTH_PROCESSING = 2010
     
+    case COMM_FIND_CLIENT_FAIL = 2000
+    case COMM_SERVER_ERROR = 2001
+    case COMM_REQUEST_PARAM_ERROR = 2002
+    case COMM_SESSION_ERROR = 2003
     case AUTH_CHANNDEL_NOT_EXIST = 2004
+    case MEMBER_MAX_USER_LICENSE_EXPIRY = 2005
+    case MEMBER_MAX_AUTH_LICENSE_EXPIRY = 2006
     case MEMBER_NOT_REGISTER = 2007
     case MEMBER_DEVICE_NOT_REGISTER = 2008
-    
+    case MEMBER_MULTIPLE_JOIN = 2009
+
+    case COMM_FAIL_LICENSE_CONSISTENCY = 2011
+    case COMM_MAINTENANCE_SERVER = 2012
+    case MEMBER_LICENSE_TERM_EXPIRY = 2013
+    case COMM_FIND_LICENSE_FAIL = 2014
+    case COMM_DUPLICATE_CLIENT = 2015
+    case COMM_DUPLICATE_LICENSE = 2016
+    case COMM_DUPLICATE_REQUEST_LICENSE = 2017
+
     case MEMBER_FIND_AUTH_TYPE_FAIL = 3000
     case MEMBER_FIND_ICON_SELECT_FAIL = 3001
     case MEMBER_FIND_PERSONAL_INFO_AGREE_FAIL = 3002
     case MEMBER_FIND_UUID_INFO_AGREE_FAIL = 3003
-    case MEMBER_FIND_FCM_TOKEN_FAIL = 3009
     case MEMBER_AUTH_NOMAL = 3004
-    case MEMBER_STATUS_UNAPPROVAL = 5005
-    case MEMBER_STATUS_TEMP = 5006
-    case MEMBER_STATUS_PERM = 5007
-    case MEMBER_STATUS_WITHDRAW = 5008
+    case MEMBER_FAIL_VAILD_AUTH_NUM = 3005
+    case MEMBER_FAIL_VAILD = 3006
+    case MEMBER_FAIL_VAILD_DEVICE_ID = 3007
+    case MEMBER_NO_ACCESS_ADMIN_PAGE = 3008
+    case MEMBER_FIND_FCM_TOKEN_FAIL = 3009
+    case MEMBER_FIND_STATUS_FAIL = 3010
     
+    case AUTH_CERT_TIME_OUT = 5000
+    case AUTH_STATUS_TIMEOUT = 5001
+    case AUTH_VAILD_SESSION_ID_FAIL = 5002
+    case AUTH_VAILD_IP_FAIL = 5003
+    case AUTH_FAIL_VAILD_BLOCK_KEY = 5004
+    case AUTH_MEMBER_STATUS_UNAPPROVAL = 5005
+    case AUTH_MEMBER_STATUS_TEMP = 5006
+    case AUTH_MEMBER_STATUS_PERM = 5007
+    case AUTH_MEMBER_STATUS_WITHDRAW = 5008
+    case AUTH_FAIL = 5010
+    case AUTH_CANCEL = 5011
     case AUTH_ICON_SELECT_FAIL = 5013
+    case AUTH_ADD_CHANNEL_FAIL = 5015
+    case AUTH_CREATE_NODE_FAIL = 5016
+    case AUTH_SEND_PUSH_FAIL = 5017
+    case AUTH_REQUEST_FAIL = 5018
+    case AUTH_GET_CHANNEL_FAIL = 5019
+    case AUTH_DATA_DECRYPT_FAIL = 5020
+    case AUTH_VERIFICATION_REQUEST_FAIL = 5021
+    case AUTH_VERIFICATION_FAIL = 5022
     
     case API_ERROR = 10001
 }
@@ -51,22 +86,8 @@ public enum NotipicationId : String {
     case NOTI_ID_CANCEL = "GUARDIAN_CANCEL"
 }
 
-//public let NOTI_ID_AUTH = "GUARDIAN_AHTH"
-//public let NOTI_ID_SUCCESS = "GUARDIAN_SUCCESS"
-//public let NOTI_ID_FAIL = "GUARDIAN_FAIL"
-//public let NOTI_ID_CANCEL = "GUARDIAN_CANCEL"
-
-//public let PUSH_TARGET_AUTH = "1000"
-//public let PUSH_TARGET_KEY_IN = "1006"
-//public let PUSH_TARGET_CANCEL = "1001"
-//public let PUSH_TARGET_SUCCESS = "1002"
-//public let PUSH_TARGET_FAIL = "1003"
-
 public let USER_KEY = "GUARDIAN_USER_KEY"
 public let FCM_TOKEN = "GUARDIAN_FCM_TOKEN"
-
-//public let AUTH_REQUEST_ACCESS_TYPE_NATIVE = "NativeAppAccess"
-//public let AUTH_REQUEST_ACCESS_TYPE_HYBRID = "HybridAppAccess"
 
 public let AUTH_FAIL_CODE_ERROR = -2
 public let AUTH_FAIL_CODE_USER_ERROR = -4
@@ -167,21 +188,21 @@ public class GuardianService{
         }
     }
     
-    private static var _translationMap : [String: Any]? = ["1": 1]
-    
-    private var translationMap : [String: Any]? {
-        get {
-            return GuardianService._translationMap
-        }
-        set (value) {
-            GuardianService._translationMap = value
-        }
-    }
+//    private static var _translationMap : [String: Any]? = ["1": 1]
+//
+//    private var translationMap : [String: Any]? {
+//        get {
+//            return GuardianService._translationMap
+//        }
+//        set (value) {
+//            GuardianService._translationMap = value
+//        }
+//    }
     
     public func initDomain(domain :String) {
         print("initDomain")
         Domain.apiDomain = domain
-        getTransltion()
+//        getTransltion()
     }
     
     public func requestMember(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
@@ -485,12 +506,8 @@ public class GuardianService{
     }
     
     private func onCallbackFailed(rtCode : RtCode, onFailed: @escaping(RtCode, String) -> Void) {
-        if let translation = translationMap as? [String: Any] {
-            let msg = translation[String(rtCode.rawValue)] as? String ?? ""
-            onFailed(rtCode, msg)
-        } else {
-            onFailed(rtCode, "undefined error")
-        }
+        let msg : String = LocalizationMessage.sharedInstance.getLocalization(code: rtCode.rawValue) as? String ?? ""
+        onFailed(rtCode, msg)
     }
     
     public func guardianPushMsgHandle(_ notification: Notification,pushCallBack: @escaping(PushState) -> Void)-> Void{
@@ -509,34 +526,34 @@ public class GuardianService{
         }
     }
     
-    func getTransltion() {
-        let lang = getLang()
-        var translationName : String
-        switch lang {
-        case "ko":
-            translationName = "translation_ko"
-        default:
-            translationName = "translation"
-        }
-        
-//        let bundle = Bundle(for: GuardianService.self)
-        
-        print("getTransltion")
-        
-        guard let asset = NSDataAsset(name: translationName) else {
-            fatalError("Missing data asset: NamedColors")
-        }
-  
-        let decoder = JSONDecoder()
-        let jj = try? decoder.decode(Translation.self, from: asset.data)
-        
-        self.translationMap = jj?.error
-        
-//        for (key, value) in jj?.error {
-//            print("\(key):\(value)")
+//    func getTransltion() {
+//        let lang = getLang()
+//        var translationName : String
+//        switch lang {
+//        case "ko":
+//            translationName = "translation_ko"
+//        default:
+//            translationName = "translation"
 //        }
-        
-    }
+//
+////        let bundle = Bundle(for: GuardianService.self)
+//
+//        print("getTransltion")
+//
+//        guard let asset = NSDataAsset(name: translationName) else {
+//            fatalError("Missing data asset: NamedColors")
+//        }
+//
+//        let decoder = JSONDecoder()
+//        let jj = try? decoder.decode(Translation.self, from: asset.data)
+//
+//        self.translationMap = jj?.error
+//        
+////        for (key, value) in jj?.error {
+////            print("\(key):\(value)")
+////        }
+//
+//    }
     
     class DeviceInfoService {
         var authCode: String!
