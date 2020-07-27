@@ -19,7 +19,7 @@ let kSecReturnDataValue = NSString(format: kSecReturnData)
 let kSecMatchLimitOneValue = NSString(format: kSecMatchLimitOne)
 
 public class KeychainService: NSObject {
-
+    
     class func updatePassword(service: String, account:String, data: String) {
         if let dataFromString: Data = data.data(using: String.Encoding.utf8, allowLossyConversion: false) {
 
@@ -37,8 +37,7 @@ public class KeychainService: NSObject {
     }
 
 
-    class func removePassword(service: String, account:String) {
-
+    public class func removePassword(service: String, account:String) {
         // Instantiate a new default keychain query
         let keychainQuery: NSMutableDictionary = NSMutableDictionary(objects: [kSecClassGenericPasswordValue, service, account, kCFBooleanTrue], forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue])
 
@@ -51,9 +50,18 @@ public class KeychainService: NSObject {
         }
 
     }
+    
+    public class func hasPassword(service: String, account:String) -> Bool {
+        if let keychainQuery: NSMutableDictionary = NSMutableDictionary(objects: [kSecClassGenericPasswordValue, service, account, kCFBooleanTrue], forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue]) {
+            return true
+        } else {
+            return false
+        }
+    }
 
 
     class func savePassword(service: String, account:String, data: String) {
+        UserDefaults.standard.set(true, forKey: "isSavedToKeychain")
         if let dataFromString = data.data(using: String.Encoding.utf8, allowLossyConversion: false) {
 
             // Instantiate a new default keychain query

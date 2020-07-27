@@ -75,7 +75,16 @@ public class LocalizationMessage {
         "5021": "[5021] Verification request failed.",
         "5022": "[5022] Authentication verification failed.",
         "6000": "[6000] Can't generate key.",
-        "7000": "[7000] Can't verify key."
+        "7000": "[7000] Can't verify key.",
+        "9000": "[9000] Biometric normal",
+        "9001": "[9001] Biometric Not Available",
+        "9002": "[9002] Biometric Lock out",
+        "9003": "[9003] This iOS device does not support hardware.",
+        "9004": "[9004] This iOS device does not registered Biometric.",
+        "9005": "[9005] This Application does not registered Biometric.",
+        "9006": "[9006] Biometrics information has been changed.",
+        "9007": "[9007] This device is registered biometrics information.",
+        "9008": "[9008] Biometrics error."
     ]
     
     private let LocalDictionary_ko : [String : String] = [
@@ -134,7 +143,16 @@ public class LocalizationMessage {
         "5021": "[5021] 검증요청에 실패하였습니다",
         "5022": "[5022] 검증에 실패하였습니다",
         "6000": "[6000] 인증키를 생성할 수 없습니다",
-        "7000": "[7000] 인증키를 검증할 수 없습니다"
+        "7000": "[7000] 인증키를 검증할 수 없습니다",
+        "9000": "[9000] 생체인증 정상",
+        "9001": "[9001] 생채인증 사용할 수 없습니다",
+        "9002": "[9002] 생체인증이 잠김 상태 입니다",
+        "9003": "[9003] 생체인증을 지원하지 않는 기기입니다",
+        "9004": "[9004] 생체인증 정보를 등록하지 않은 기기 입니다",
+        "9005": "[9005] 앱에 등록 된 생체인증 정보가 존재하지 않습니다",
+        "9006": "[9006] 생체인증 정보가 변경 되었습니다",
+        "9007": "[9007] 등록되어 있는 생체인증 정보가 존재합니다",
+        "9008": "[9008] 생체인증 오류"
     ]
     
     public func getLocalization(code : Int) -> String? {
