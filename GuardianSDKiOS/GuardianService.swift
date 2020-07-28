@@ -171,12 +171,41 @@ public class GuardianService{
         
     public static let sharedInstance = GuardianService()
     
+    public var _authRequestSuccess : (RtCode, String, Int, String) -> Void
+    public var _authRequestProcess : (Bool, Int) -> Void
+    public var _authRequestFailed : (RtCode, String) -> Void
+    
     private init() {
-        
+        func initOnSuccess(rtcode: RtCode, rtMsg: String, authType: Int, connectIp: String) -> Void{}
+        func initOnProcess(result : Bool, step : Int) -> Void{}
+        func initOnFailed(rtcode: RtCode, rtMsg: String) -> Void{}
+        self._authRequestSuccess = initOnSuccess
+        self._authRequestProcess = initOnProcess
+        self._authRequestFailed = initOnFailed
     }
     
     public struct Domain {
         public static var apiDomain = ""
+    }
+    
+    private static var _authType : Int = 0
+    public var authType : Int {
+        get {
+            return GuardianService._authType
+        }
+        set(value) {
+            GuardianService._authType = value
+        }
+    }
+    
+    private static var _connectIp : String = ""
+    public var connectIp : String {
+        get {
+            return GuardianService._connectIp
+        }
+        set(value) {
+            GuardianService._connectIp = value
+        }
     }
     
     private static var _channelKey : String = ""
@@ -213,7 +242,26 @@ public class GuardianService{
     public func initDomain(domain :String) {
         print("initDomain")
         Domain.apiDomain = domain
-//        getTransltion()
+    }
+    
+    public func onGuardianPushMsgHandle(_ notification: UNNotification) -> Void {
+        
+        let userInfo = notification.request.content.userInfo
+        let target = userInfo["gcm.notification.target"] as! String
+        
+        if(target == PushTarget.PUSH_TARGET_AUTH.rawValue || target == PushTarget.PUSH_TARGET_KEY_IN.rawValue){
+            //앱이 활성화 에서 알림이 메시지가 도착한 경우.
+            //NotificationCenter.default.post(name: Notification.Name("fnsLogin"), object: nil, userInfo: userInfo)
+        } else if(target == PushTarget.PUSH_TARGET_SUCCESS.rawValue) {
+            setAuthRequestProcess(result: true)
+        } else if(target == PushTarget.PUSH_TARGET_FAIL.rawValue){
+            setAuthRequestProcess(result: false)
+        } else if(target == PushTarget.PUSH_TARGET_CANCEL.rawValue){
+//
+        } else {
+            NSLog("target null")
+        }
+
     }
     
     public func requestMember(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
@@ -282,7 +330,7 @@ public class GuardianService{
         })
     }
     
-    public func requestAuthRequest(onSuccess: @escaping(RtCode, String, Int, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
+    public func requestAuthRequest(onSuccess: @escaping(RtCode, String, Int, String)-> Void, onProcess: @escaping(Bool, Int) -> Void,  onFailed: @escaping(RtCode, String)-> Void) {
         let apiUrl = "auth/request"
         
         let enCodeCK = encryptAES256(value: self.channelKey, seckey: self.channelKey)
@@ -310,10 +358,12 @@ public class GuardianService{
                     return
                 }
                 
-                let authType = authData["authType"] as! Int
-                let connectIp = authData["connectIp"] as! String
+                self.authType = authData["authType"] as! Int
+                self.connectIp = authData["connectIp"] as! String
                 
-                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, authType, connectIp)
+                self._authRequestSuccess = onSuccess
+                self._authRequestProcess = onProcess
+                self._authRequestFailed = onFailed
                 
             } else {
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
@@ -322,6 +372,30 @@ public class GuardianService{
         }, errorCallBack: {(errorCode, errorMsg) -> Void in
             onFailed(RtCode.API_ERROR, errorMsg)
         })
+    }
+   
+    private func setAuthRequestProcess(result : Bool) {
+        var time = DispatchTime.now() + 0.2
+        DispatchQueue.main.asyncAfter(deadline: time) {
+            time = DispatchTime.now() + 0.2
+            self._authRequestProcess(result, 1)
+            DispatchQueue.main.asyncAfter(deadline: time) {
+                time = DispatchTime.now() + 0.2
+                self._authRequestProcess(result, 2)
+                DispatchQueue.main.asyncAfter(deadline: time) {
+                    time = DispatchTime.now() + 0.2
+                    self._authRequestProcess(result, 3)
+                    DispatchQueue.main.asyncAfter(deadline: time) {
+                        self._authRequestProcess(result, 4)
+                        if(result) {
+                            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp)
+                        } else {
+                            self._authRequestFailed(RtCode.AUTH_FAIL, "")
+                        }
+                    }
+                }
+            }
+        }
     }
     
     public func requestAuthResult(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {

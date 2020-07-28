@@ -9,7 +9,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "GuardianSDKiOS"
-  spec.version      = "0.0.5"
+  spec.version      = "0.0.6"
   spec.summary      = "A summary description of GuardianSDKiOS."
 
   spec.description  = "A Description of GuardianSDKiOS CocoaPads Framework"
