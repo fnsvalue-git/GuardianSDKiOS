@@ -9,7 +9,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "GuardianSDKiOS"
-  spec.version      = "0.0.6"
+  spec.version      = "0.0.7"
   spec.summary      = "A summary description of GuardianSDKiOS."
 
   spec.description  = "A Description of GuardianSDKiOS CocoaPads Framework"
@@ -28,6 +28,7 @@ Pod::Spec.new do |spec|
 
   spec.dependency 'Alamofire', '~> 4.4'
   spec.dependency 'CryptoSwift'
+  spec.dependency 'SwiftyJSON'
 
   spec.swift_version = '4.2'
 

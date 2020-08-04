@@ -50,20 +50,21 @@ open class BiometricService{
             }
         }
         
-        if(!hasRegisterBiometric()) {
-            return RtCode.BIOMETRIC_NOT_ENROLLED_APP
-        }
+        // TODO: - 인증 등록 확인 임시 제거
+//        if(!hasRegisterBiometric()) {
+//            return RtCode.BIOMETRIC_NOT_ENROLLED_APP
+//        }
         
         return RtCode.AUTH_SUCCESS
     }
     
     public func authenticate(msg: String, onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String?)-> Void) {
         let initCode = initBiometric()
-        if(initBiometric() != .AUTH_SUCCESS) {
+        if(initCode != .AUTH_SUCCESS) {
             onFailed(initCode, "")
         } else {
             let context = LAContext()
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: msg, reply:{(success,e) in
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Biometric", reply:{(success,e) in
                 if success {
                     DispatchQueue.main.async {
                         print("Biometric auth success")

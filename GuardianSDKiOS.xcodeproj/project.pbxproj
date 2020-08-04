@@ -8,25 +8,27 @@
 
 /* Begin PBXBuildFile section */
 		2333280323B4A4580005F329 /* KeyChainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2333280223B4A4570005F329 /* KeyChainService.swift */; };
-		2353C557242A03FF0053E1D4 /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2353C54A2429EC9F0053E1D4 /* Alamofire.framework */; };
-		2353C55A242A04000053E1D4 /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2353C54D2429ECA50053E1D4 /* CryptoSwift.framework */; };
 		23ACF438233322B800FA4246 /* GuardianFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 23ACF436233322B800FA4246 /* GuardianFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6B141BD024BFE9D400A93261 /* LocalizationMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B141BCF24BFE9D400A93261 /* LocalizationMessage.swift */; };
 		6B3901AD24B70D1C00473869 /* TranslationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3901AC24B70D1C00473869 /* TranslationModel.swift */; };
 		6B83CAD424B565AF0073C2F8 /* BiometricService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B83CAD324B565AF0073C2F8 /* BiometricService.swift */; };
+		6BBF997C24D7DF9200F203BC /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6BBF997B24D7DF9200F203BC /* Alamofire.framework */; };
+		6BBF998024D7DF9500F203BC /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6BBF997F24D7DF9500F203BC /* CryptoSwift.framework */; };
+		6BBF998324D7DFBD00F203BC /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6BBF998224D7DFBD00F203BC /* SwiftyJSON.framework */; };
 		6BF17DDE24B403C5000C3C01 /* GuardianService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BF17DDD24B403C5000C3C01 /* GuardianService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		2333280223B4A4570005F329 /* KeyChainService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyChainService.swift; sourceTree = "<group>"; };
-		2353C54A2429EC9F0053E1D4 /* Alamofire.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Alamofire.framework; path = "../../../../Library/Developer/Xcode/DerivedData/Guardian-duyxusnogzknczemqalmcughqumz/Build/Products/Debug-iphoneos/Alamofire/Alamofire.framework"; sourceTree = "<group>"; };
-		2353C54D2429ECA50053E1D4 /* CryptoSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CryptoSwift.framework; path = "../../../../Library/Developer/Xcode/DerivedData/Guardian-duyxusnogzknczemqalmcughqumz/Build/Products/Debug-iphoneos/CryptoSwift/CryptoSwift.framework"; sourceTree = "<group>"; };
 		23ACF433233322B800FA4246 /* GuardianSDKiOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GuardianSDKiOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		23ACF436233322B800FA4246 /* GuardianFramework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GuardianFramework.h; sourceTree = "<group>"; };
 		23ACF437233322B800FA4246 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6B141BCF24BFE9D400A93261 /* LocalizationMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationMessage.swift; sourceTree = "<group>"; };
 		6B3901AC24B70D1C00473869 /* TranslationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationModel.swift; sourceTree = "<group>"; };
 		6B83CAD324B565AF0073C2F8 /* BiometricService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricService.swift; sourceTree = "<group>"; };
+		6BBF997B24D7DF9200F203BC /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6BBF997F24D7DF9500F203BC /* CryptoSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CryptoSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6BBF998224D7DFBD00F203BC /* SwiftyJSON.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SwiftyJSON.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6BF17DDD24B403C5000C3C01 /* GuardianService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuardianService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -35,8 +37,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2353C557242A03FF0053E1D4 /* Alamofire.framework in Frameworks */,
-				2353C55A242A04000053E1D4 /* CryptoSwift.framework in Frameworks */,
+				6BBF997C24D7DF9200F203BC /* Alamofire.framework in Frameworks */,
+				6BBF998024D7DF9500F203BC /* CryptoSwift.framework in Frameworks */,
+				6BBF998324D7DFBD00F203BC /* SwiftyJSON.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,8 +80,9 @@
 		23ACF44A2333369300FA4246 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				2353C54D2429ECA50053E1D4 /* CryptoSwift.framework */,
-				2353C54A2429EC9F0053E1D4 /* Alamofire.framework */,
+				6BBF998224D7DFBD00F203BC /* SwiftyJSON.framework */,
+				6BBF997F24D7DF9500F203BC /* CryptoSwift.framework */,
+				6BBF997B24D7DF9200F203BC /* Alamofire.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -314,6 +318,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(BUILT_PRODUCTS_DIR)/CryptoSwift",
 					"$(BUILT_PRODUCTS_DIR)/Alamofire",
+					"$(BUILT_PRODUCTS_DIR)/SwiftyJSON",
 				);
 				INFOPLIST_FILE = GuardianSDKiOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
