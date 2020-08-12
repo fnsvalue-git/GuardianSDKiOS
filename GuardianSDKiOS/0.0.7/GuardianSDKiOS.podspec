@@ -21,7 +21,7 @@ Pod::Spec.new do |spec|
 
   spec.platform     = :ios, "12.0"
 
-  spec.source       = { :git => "https://github.com/fnsvalue-ios/GuardianSDKiOS.git", :tag => "#{spec.version}" }
+  spec.source       = { :git => "https://github.com/fnsvalue-git/GuardianSDKiOS.git", :tag => "#{spec.version}" }
 
   spec.source_files  = "GuardianSDKiOS", "GuardianSDKiOS/**/*.{h,m}"
   spec.exclude_files = "Classes/Exclude"
