@@ -9,7 +9,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "GuardianSDKiOS"
-  spec.version      = "0.0.7"
+  spec.version      = "0.0.8"
   spec.summary      = "A summary description of GuardianSDKiOS."
 
   spec.description  = "A Description of GuardianSDKiOS CocoaPads Framework"
@@ -21,7 +21,7 @@ Pod::Spec.new do |spec|
 
   spec.platform     = :ios, "12.0"
 
-  spec.source       = { :git => "https://github.com/fnsvalue-ios/GuardianSDKiOS.git", :tag => "#{spec.version}" }
+  spec.source       = { :git => "https://github.com/fnsvalue-git/GuardianSDKiOS.git", :tag => "#{spec.version}" }
 
   spec.source_files  = "GuardianSDKiOS", "GuardianSDKiOS/**/*.{h,m}"
   spec.exclude_files = "Classes/Exclude"
@@ -29,6 +29,7 @@ Pod::Spec.new do |spec|
   spec.dependency 'Alamofire', '~> 4.4'
   spec.dependency 'CryptoSwift'
   spec.dependency 'SwiftyJSON'
+  spec.dependency 'StompClientLib'
 
   spec.swift_version = '4.2'
 

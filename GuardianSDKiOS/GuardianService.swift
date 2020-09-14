@@ -98,6 +98,54 @@ public enum NotipicationId : String {
     case NOTI_ID_CANCEL = "GUARDIAN_CANCEL"
 }
 
+public enum AuthStatus : String {
+    /**
+     * 인증시작 요청 by Web
+     */
+    case REQUEST_AUTH = "RequestAuth"
+    /**
+     * 채널 생성
+     */
+    case CREATE_CHANNEL = "CreateChannel"
+    /**
+     * 검증노드 선정
+     */
+    case SELECT_NODES = "SelectNodes"
+    /**
+     * 인증시작 by App
+     */
+    case START_AUTH = "StartAuth"
+    /**
+     * 노드검증 시작
+     */
+    case START_VERIFICATION_OF_NODES = "StartVerificationOfNodes"
+    /**
+     * 노드검증 완료
+     */
+    case COMPLETE_VERIFICATION_OF_NODES = "CompleteVerificationOfNodes"
+    /**
+     * 취소 요청 by App/Web
+     */
+    case REQUEST_CANCEL = "RequestCancel"
+    /**
+     * 인증취소(완료) by App/Web
+     */
+    case AUTH_CANCELED = "AuthCanceled"
+    /**
+     * 인층실패(완료)
+     */
+    case AUTH_FAILED = "AuthFailed"
+    /**
+     * 인증성공(완료)
+     */
+    case AUTH_COMPLETED = "AuthCompleted"
+    /**
+     *  인증 시간 초과
+     */
+    case AUTH_TIMEOUT = "AuthTimeout"
+
+}
+
 public let USER_KEY = "GUARDIAN_USER_KEY"
 public let FCM_TOKEN = "GUARDIAN_FCM_TOKEN"
 
@@ -168,25 +216,38 @@ func getAppVersion() -> String {
     return appVersion!
 }
 
+public protocol AuthObserver: class {
+    func onAuthentication(status : String)
+}
+
 public class GuardianService{
         
     public static let sharedInstance = GuardianService()
     
     public var _authRequestSuccess : (RtCode, String, Int, String) -> Void
-    public var _authRequestProcess : (Bool, Int) -> Void
+    public var _authRequestProcess : (String) -> Void
     public var _authRequestFailed : (RtCode, String) -> Void
     
     private init() {
         func initOnSuccess(rtcode: RtCode, rtMsg: String, authType: Int, connectIp: String) -> Void{}
-        func initOnProcess(result : Bool, step : Int) -> Void{}
+        func initOnProcess(status : String) -> Void{}
         func initOnFailed(rtcode: RtCode, rtMsg: String) -> Void{}
         self._authRequestSuccess = initOnSuccess
         self._authRequestProcess = initOnProcess
         self._authRequestFailed = initOnFailed
     }
     
+    var authTimeoutTimer = Timer()
+    
+    var observers = [AuthObserver]()
+    
     public struct Domain {
+        public static var baseUrl = ""
         public static var apiDomain = ""
+    }
+    
+    public func getBaseUrl() -> String {
+        return Domain.baseUrl
     }
     
     private static var _clientKey : String = ""
@@ -250,65 +311,102 @@ public class GuardianService{
 //        }
 //    }
     
-    public func initDomain(domain :String) {
+    public func initDomain(baseUrl :String, apiUrl : String ) {
         print("initDomain")
-        Domain.apiDomain = domain
+        Domain.baseUrl = baseUrl
+        Domain.apiDomain = apiUrl
     }
     
     public func initClientKey(clientKey: String) {
         self.clientKey = clientKey
     }
     
+    public func addObserver(_ observer: AuthObserver) {
+        observers.append(observer)
+    }
+    
+    public func removeObserver(_ observer: AuthObserver) {
+        observers = observers.filter({ $0 !== observer })
+    }
+    
+    public func notifyAuthStatus(status : String) {
+        for observer in observers {
+            observer.onAuthentication(status: status)
+        }
+    }
+    
     public func onGuardianPushMsgHandle(_ notification: UNNotification) -> Void {
-        
         let userInfo = notification.request.content.userInfo
         let target = userInfo["gcm.notification.target"] as! String
         
-        if(target == PushTarget.PUSH_TARGET_AUTH.rawValue || target == PushTarget.PUSH_TARGET_KEY_IN.rawValue){
-            //앱이 활성화 에서 알림이 메시지가 도착한 경우.
-            //NotificationCenter.default.post(name: Notification.Name("fnsLogin"), object: nil, userInfo: userInfo)
+        if(target == PushTarget.PUSH_TARGET_AUTH.rawValue){
+            guard let channelKey: String = userInfo["gcm.notification.channel_key"] as? String else {return}
+            guard let blockKey: String = userInfo["gcm.notification.block_key"] as? String else {return}
+            
+            self.channelKey = channelKey
+            self.blockKey = blockKey
+            
+            var socketDataMap = getCommonParam()
+            socketDataMap["channelKey"] = self.channelKey
+            socketDataMap["deviceId"] = getUUid()
+            
+            StompSocketService.sharedInstance.connect(dataMap: socketDataMap, connectCallback: {(isConnect: Bool) -> Void in
+                if isConnect {
+                    print("stompwebsocket connect")
+                    StompSocketService.sharedInstance.subscribe(authProcessCallback: {(status : String?) -> Void in
+                        print("stompwebsocket subscribe => \(status!)")
+                        
+                        self.notifyAuthStatus(status: status!)
+                        
+                        if status == AuthStatus.COMPLETE_VERIFICATION_OF_NODES.rawValue {
+                            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp)
+                        }
+                        
+                        if status! != AuthStatus.AUTH_COMPLETED.rawValue ||
+                            status! != AuthStatus.AUTH_FAILED.rawValue ||
+                            status! != AuthStatus.AUTH_CANCELED.rawValue {
+                            
+                            self._authRequestProcess(status!) //authRequest callback.
+                        }
+                        
+                        if status! == AuthStatus.AUTH_COMPLETED.rawValue || status! == AuthStatus.AUTH_FAILED.rawValue {
+                            StompSocketService.sharedInstance.disconnect()
+                            self.invalidateAuthTimeoutTimer()
+                        }
+                        
+                    })
+                } else {
+                    print("stompwebsocket disconnect")
+                }
+            })
         } else if(target == PushTarget.PUSH_TARGET_SUCCESS.rawValue) {
-            setAuthRequestProcess(result: true)
+            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp)
         } else if(target == PushTarget.PUSH_TARGET_FAIL.rawValue){
-            setAuthRequestProcess(result: false)
+            self._authRequestFailed(RtCode.AUTH_FAIL, "")
         } else if(target == PushTarget.PUSH_TARGET_CANCEL.rawValue){
 //
         } else {
             NSLog("target null")
         }
-
     }
     
     public func requestMember(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
-        let apiUrl = "member"
+        let apiUrl = "device/check"
         var params = getCommonParam()
         params["deviceId"] = getUUid()
 
-        self.postAPI(params: params, api: apiUrl, successCallBack: {(data: JSON) -> Void in
+        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data: JSON) -> Void in
                 
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
             if (rtCode == RtCode.AUTH_SUCCESS.rawValue) {
-                guard let member = data["data"] as? JSON else {
-                    onFailed(RtCode.MEMBER_NOT_REGISTER, rtMsg)
-                    return
-                }
-                
-                let userKey = member["userKey"].string ?? ""
-                setUserKey(userKey: userKey)
-                
-                let userTotalStatus = member["userTotalStatus"].intValue
-                if (userTotalStatus == RtCode.MEMBER_AUTH_NOMAL.rawValue){
-                    onSuccess(RtCode(rawValue: userTotalStatus)!, rtMsg)
-                } else if(userTotalStatus == RtCode.AUTH_PROCESSING.rawValue){
-                    self.channelKey = member["channelKey"].string ?? ""
-                    self.blockKey = member["blockKey"].string ?? ""
-                    onSuccess(RtCode.AUTH_PROCESSING, rtMsg)
+                let isRegister : Bool = data["data"].bool ?? false
+                if(isRegister) {
+                    onSuccess(RtCode.AUTH_SUCCESS, rtMsg)
                 } else {
-                    self.onCallbackFailed(rtCode: RtCode(rawValue: userTotalStatus)!, onFailed: onFailed)
+                    self.onCallbackFailed(rtCode : RtCode.MEMBER_NOT_REGISTER, onFailed: onFailed)
                 }
-            
             } else if(rtCode == RtCode.MEMBER_NOT_REGISTER.rawValue){
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             } else {
@@ -321,26 +419,26 @@ public class GuardianService{
     }
     
     public func requestClients(onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
-        let apiUrl = "device/app/clients"
+        let apiUrl = "clients"
         var params = getCommonParam()
         params["deviceId"] = getUUid()
         
-        self.postAPI(params: params, api: apiUrl, successCallBack: {(data: JSON) -> Void in
+        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data: JSON) -> Void in
                 
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
             if (rtCode == RtCode.AUTH_SUCCESS.rawValue) {
                 var returnValue = Array<[String:String]>()
-                let size = data["dataList"].count
+                let size = data["data"].count
                 for i in 0..<size {
-                    let client = data["dataList"].arrayValue[i]
+                    let client = data["data"].arrayValue[i]
                     var dic = [String:String]()
                     dic["clientName"] = client["clientName"].string ?? ""
                     dic["clientKey"] = client["clientKey"].string ?? ""
                     returnValue.append(dic)
                 }
-                onSuccess(RtCode.AUTH_PROCESSING, rtMsg, returnValue)
+                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, returnValue)
             } else {
                 onFailed(RtCode.API_ERROR, "\(rtCode)")
             }
@@ -352,16 +450,15 @@ public class GuardianService{
     }
     
     public func requestTokenUpdate(token : String, onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
-        let apiUrl = "member/token/update"
+        let apiUrl = "me/token"
         
         var params = getCommonParam()
         params["deviceId"] = getUUid()
-        params["userKey"] = getUserKey()
         params["token"] = token
         params["osVersion"] = getOSVersion()
         params["appVersion"] = getAppVersion()
         
-        self.postAPI(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+        self.callHttpPut(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
             
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
@@ -375,21 +472,20 @@ public class GuardianService{
         })
     }
     
-    public func requestAuthRequest(onSuccess: @escaping(RtCode, String, Int, String)-> Void, onProcess: @escaping(Bool, Int) -> Void,  onFailed: @escaping(RtCode, String)-> Void) {
-        let apiUrl = "auth/request"
+    public func requestAuthRequest(onSuccess: @escaping(RtCode, String, Int, String)-> Void, onProcess: @escaping(String) -> Void,  onFailed: @escaping(RtCode, String)-> Void) {
+        let apiUrl = "auth/nodes"
         
         let enCodeCK = encryptAES256(value: self.channelKey, seckey: self.channelKey)
         let enCodeBK = encryptAES256(value: self.blockKey, seckey: self.channelKey)
         let enCodeDK = encryptAES256(value: getUUid(), seckey: self.channelKey)
         
         var params = getCommonParam()
-        params["userKey"] = getUserKey()
         params["deviceId"] = getUUid()
         params["enCodeCK"] = enCodeCK
         params["enCodeBK"] = enCodeBK
         params["enCodeDK"] = enCodeDK
         
-        self.postAPI(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
             
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
@@ -402,6 +498,10 @@ public class GuardianService{
                 
                 self.authType = authData["authType"].intValue
                 self.connectIp = authData["connectIp"].string ?? ""
+                let authTimeRemaining = authData["authTimeRemaining"].doubleValue
+                
+                // Auth Timer start
+                self.executeAuthTimeoutTimer(authTimeRemaining : authTimeRemaining)
                 
                 self._authRequestSuccess = onSuccess
                 self._authRequestProcess = onProcess
@@ -415,38 +515,25 @@ public class GuardianService{
             onFailed(RtCode.API_ERROR, errorMsg)
         })
     }
+    
+    private func executeAuthTimeoutTimer(authTimeRemaining : Double) {
+        let authTimeout = authTimeRemaining / 1000
+        self.authTimeoutTimer = Timer.scheduledTimer(withTimeInterval: authTimeout, repeats: false, block: { timer in
+            self.notifyAuthStatus(status : AuthStatus.AUTH_TIMEOUT.rawValue)
+        })
+    }
    
-    private func setAuthRequestProcess(result : Bool) {
-        var time = DispatchTime.now() + 0.2
-        DispatchQueue.main.asyncAfter(deadline: time) {
-            time = DispatchTime.now() + 0.2
-            self._authRequestProcess(result, 1)
-            DispatchQueue.main.asyncAfter(deadline: time) {
-                time = DispatchTime.now() + 0.2
-                self._authRequestProcess(result, 2)
-                DispatchQueue.main.asyncAfter(deadline: time) {
-                    time = DispatchTime.now() + 0.2
-                    self._authRequestProcess(result, 3)
-                    DispatchQueue.main.asyncAfter(deadline: time) {
-                        self._authRequestProcess(result, 4)
-                        if(result) {
-                            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp)
-                        } else {
-                            self._authRequestFailed(RtCode.AUTH_FAIL, "")
-                        }
-                    }
-                }
-            }
-        }
+    private func invalidateAuthTimeoutTimer() {
+        self.authTimeoutTimer.invalidate()
     }
     
     public func requestAuthResult(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
-        let apiUrl = "auth/result"
+        let apiUrl = "auth/complete"
         
         var params = getCommonParam()
-        params["userKey"] = getUserKey()
+        params["deviceId"] = getUUid()
         
-        self.postAPI(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
             
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
@@ -463,13 +550,12 @@ public class GuardianService{
     }
     
     public func requestAuthCancel(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
-        let apiUrl = "auth/cancel/app"
+        let apiUrl = "auth"
         
         var params = getCommonParam()
-        params["userKey"] = getUserKey()
+        params["deviceId"] = getUUid()
         
-        self.postAPI(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
-            
+        self.callHttpDelete(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
@@ -500,7 +586,7 @@ public class GuardianService{
 //            params["iconSelect"] = iconSelect
             params["userKey"] = userKey
             
-            self.postAPI(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+            self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
                 setUserKey(userKey: userKey)
                 let rtCode = data["rtCode"].intValue
                 let rtMsg = data["rtMsg"].string ?? ""
@@ -518,13 +604,13 @@ public class GuardianService{
     }
     
     public func requestVerifyIcon(icons: String, onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
-        let apiUrl = "verify/icon"
+        let apiUrl = "auth/verify/icon"
         
         var params = getCommonParam()
-        params["userKey"] = getUserKey()
+        params["deviceId"] = getUUid()
         params["iconSelect"] = icons
         
-        self.postAPI(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
             
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
@@ -542,12 +628,12 @@ public class GuardianService{
     }
     
     public func requestFingerFail(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
-        let apiUrl = "verify/fingerPrint/fail"
+        let apiUrl = "auth/verify/finger/fail"
         
         var params = getCommonParam()
-        params["userKey"] = getUserKey()
+        params["deviceId"] = getUUid()
         
-        self.postAPI(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
             
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
@@ -563,17 +649,14 @@ public class GuardianService{
         })
     }
     
-    private func postAPI(params: Dictionary<String,String>,
-                      api: String,
-                      successCallBack : @escaping(JSON) -> Void,
-                      errorCallBack: @escaping(Int, String) -> Void){
+    private func callHttpGet(params: Dictionary<String,String>,
+                            api: String,
+                            successCallBack : @escaping(JSON) -> Void,
+                            errorCallBack: @escaping(Int, String) -> Void) {
         
         let url = Domain.apiDomain + api
-        print("postAPI")
-        print(params)
-        print(url)
         
-        Alamofire.request(url,method: .post,parameters: params,encoding: JSONEncoding.default)
+        Alamofire.request(url,method: .get ,parameters: params)
             .responseJSON{ response in
                 guard response.result.isSuccess else {
                     var statusCode : Int! = response.response?.statusCode ?? RtCode.API_ERROR.rawValue
@@ -624,34 +707,197 @@ public class GuardianService{
                     let json = JSON(data)
                     successCallBack(json)
                 }
+        }
+    }
+    
+    private func callHttpPost(params: Dictionary<String,String>,
+                            api: String,
+                            successCallBack : @escaping(JSON) -> Void,
+                            errorCallBack: @escaping(Int, String) -> Void) {
+        
+        let url = Domain.apiDomain + api
                 
-//                if let data = response.result.value as? [String:Any]{
-//                    print(data)
-//                    successCallBack(data)
-//                }
+        Alamofire.request(url,method: .post ,parameters: params, encoding: JSONEncoding.default)
+            .responseJSON{ response in
+                guard response.result.isSuccess else {
+                    var statusCode : Int! = response.response?.statusCode ?? RtCode.API_ERROR.rawValue
+                    var statusMessage : String
+                    if let error = response.result.error as? AFError {
+                        statusCode = error._code // statusCode private
+                        switch error {
+                        case .invalidURL(let url):
+                            statusMessage = "Invalid URL"
+                        case .parameterEncodingFailed(let reason):
+                            statusMessage = "Parameter encoding failed"
+                        case .multipartEncodingFailed(let reason):
+                            statusMessage = "Multipart encoding failed"
+                        case .responseValidationFailed(let reason):
+                            statusMessage = "Response validation failed"
+                            statusMessage = "Failure Reason"
+                            switch reason {
+                            case .dataFileNil, .dataFileReadFailed:
+                                statusMessage = "Downloaded file could not be read"
+                            case .missingContentType(let acceptableContentTypes):
+                                statusMessage = "Content Type Missing: \(acceptableContentTypes)"
+                            case .unacceptableContentType(let acceptableContentTypes, let responseContentType):
+                                statusMessage = "Response content type: \(responseContentType) was unacceptable: \(acceptableContentTypes)"
+                            case .unacceptableStatusCode(let code):
+                                statusMessage = "Response status code was unacceptable: \(code)"
+                                statusCode = code
+                            }
+                        case .responseSerializationFailed(let reason):
+                            statusMessage = "Response serialization failed: \(error.localizedDescription)"
+                            statusMessage = "Failure Reason"
+                            // statusCode = 3840 ???? maybe..
+                        }
+//                        statusMessage = "Underlying error: \(error.underlyingError)"
+                        statusMessage = "Underlying error"
+                    } else if let error = response.result.error as? URLError {
+//                        statusMessage = "URLError occurred: \(error)"
+                        statusMessage = "URLError occurred"
+                    } else {
+//                        statusMessage = "Unknown error: \(response.result.error)"
+                        statusMessage = "Unknown error"
+                    }
+
+                    errorCallBack(statusCode, statusMessage)
+                    return
+                }
                 
+                if let data = response.result.value {
+                    let json = JSON(data)
+                    successCallBack(json)
+                }
+        }
+        
+    }
+    
+    private func callHttpPut(params: Dictionary<String,String>,
+                            api: String,
+                            successCallBack : @escaping(JSON) -> Void,
+                            errorCallBack: @escaping(Int, String) -> Void) {
+        
+        let url = Domain.apiDomain + api
+                        
+        Alamofire.request(url,method: .put ,parameters: params, encoding: JSONEncoding.default)
+            .responseJSON{ response in
+                guard response.result.isSuccess else {
+                    var statusCode : Int! = response.response?.statusCode ?? RtCode.API_ERROR.rawValue
+                    var statusMessage : String
+                    if let error = response.result.error as? AFError {
+                        statusCode = error._code // statusCode private
+                        switch error {
+                        case .invalidURL(let url):
+                            statusMessage = "Invalid URL"
+                        case .parameterEncodingFailed(let reason):
+                            statusMessage = "Parameter encoding failed"
+                        case .multipartEncodingFailed(let reason):
+                            statusMessage = "Multipart encoding failed"
+                        case .responseValidationFailed(let reason):
+                            statusMessage = "Response validation failed"
+                            statusMessage = "Failure Reason"
+                            switch reason {
+                            case .dataFileNil, .dataFileReadFailed:
+                                statusMessage = "Downloaded file could not be read"
+                            case .missingContentType(let acceptableContentTypes):
+                                statusMessage = "Content Type Missing: \(acceptableContentTypes)"
+                            case .unacceptableContentType(let acceptableContentTypes, let responseContentType):
+                                statusMessage = "Response content type: \(responseContentType) was unacceptable: \(acceptableContentTypes)"
+                            case .unacceptableStatusCode(let code):
+                                statusMessage = "Response status code was unacceptable: \(code)"
+                                statusCode = code
+                            }
+                        case .responseSerializationFailed(let reason):
+                            statusMessage = "Response serialization failed: \(error.localizedDescription)"
+                            statusMessage = "Failure Reason"
+                            // statusCode = 3840 ???? maybe..
+                        }
+//                        statusMessage = "Underlying error: \(error.underlyingError)"
+                        statusMessage = "Underlying error"
+                    } else if let error = response.result.error as? URLError {
+//                        statusMessage = "URLError occurred: \(error)"
+                        statusMessage = "URLError occurred"
+                    } else {
+//                        statusMessage = "Unknown error: \(response.result.error)"
+                        statusMessage = "Unknown error"
+                    }
+
+                    errorCallBack(statusCode, statusMessage)
+                    return
+                }
+                
+                if let data = response.result.value {
+                    let json = JSON(data)
+                    successCallBack(json)
+                }
+        }
+    }
+    
+    private func callHttpDelete(params: Dictionary<String,String>,
+                            api: String,
+                            successCallBack : @escaping(JSON) -> Void,
+                            errorCallBack: @escaping(Int, String) -> Void) {
+        
+        
+        let url = Domain.apiDomain + api
+                                
+        Alamofire.request(url,method: .delete ,parameters: params, encoding: JSONEncoding.default)
+            .responseJSON{ response in
+                guard response.result.isSuccess else {
+                    var statusCode : Int! = response.response?.statusCode ?? RtCode.API_ERROR.rawValue
+                    var statusMessage : String
+                    if let error = response.result.error as? AFError {
+                        statusCode = error._code // statusCode private
+                        switch error {
+                        case .invalidURL(let url):
+                            statusMessage = "Invalid URL"
+                        case .parameterEncodingFailed(let reason):
+                            statusMessage = "Parameter encoding failed"
+                        case .multipartEncodingFailed(let reason):
+                            statusMessage = "Multipart encoding failed"
+                        case .responseValidationFailed(let reason):
+                            statusMessage = "Response validation failed"
+                            statusMessage = "Failure Reason"
+                            switch reason {
+                            case .dataFileNil, .dataFileReadFailed:
+                                statusMessage = "Downloaded file could not be read"
+                            case .missingContentType(let acceptableContentTypes):
+                                statusMessage = "Content Type Missing: \(acceptableContentTypes)"
+                            case .unacceptableContentType(let acceptableContentTypes, let responseContentType):
+                                statusMessage = "Response content type: \(responseContentType) was unacceptable: \(acceptableContentTypes)"
+                            case .unacceptableStatusCode(let code):
+                                statusMessage = "Response status code was unacceptable: \(code)"
+                                statusCode = code
+                            }
+                        case .responseSerializationFailed(let reason):
+                            statusMessage = "Response serialization failed: \(error.localizedDescription)"
+                            statusMessage = "Failure Reason"
+                            // statusCode = 3840 ???? maybe..
+                        }
+//                        statusMessage = "Underlying error: \(error.underlyingError)"
+                        statusMessage = "Underlying error"
+                    } else if let error = response.result.error as? URLError {
+//                        statusMessage = "URLError occurred: \(error)"
+                        statusMessage = "URLError occurred"
+                    } else {
+//                        statusMessage = "Unknown error: \(response.result.error)"
+                        statusMessage = "Unknown error"
+                    }
+
+                    errorCallBack(statusCode, statusMessage)
+                    return
+                }
+                
+                if let data = response.result.value {
+                    let json = JSON(data)
+                    successCallBack(json)
+                }
         }
     }
     
     private func onCallbackFailed(rtCode : RtCode, onFailed: @escaping(RtCode, String) -> Void) {
         let msg : String = LocalizationMessage.sharedInstance.getLocalization(code: rtCode.rawValue) as? String ?? ""
         onFailed(rtCode, msg)
-    }
-    
-    public func guardianPushMsgHandle(_ notification: Notification,pushCallBack: @escaping(PushState) -> Void)-> Void{
-        guard let targetString: String = notification.userInfo?["gcm.notification.target"] as? String else {return}
-        
-        if targetString == "1000" {
-            guard let channelKey: String = notification.userInfo?["gcm.notification.channel_key"] as? String else {return}
-            guard let blockKey: String = notification.userInfo?["gcm.notification.block_key"] as? String else {return}
-            
-            self.channelKey = channelKey
-            self.blockKey = blockKey
-            
-            pushCallBack(PushState.deviceCheck)
-        } else {
-            pushCallBack(PushState.keyIn)
-        }
     }
     
     private func getCommonParam() -> Dictionary<String,String> {
@@ -665,35 +911,6 @@ public class GuardianService{
         }
         return params
     }
-    
-//    func getTransltion() {
-//        let lang = getLang()
-//        var translationName : String
-//        switch lang {
-//        case "ko":
-//            translationName = "translation_ko"
-//        default:
-//            translationName = "translation"
-//        }
-//
-////        let bundle = Bundle(for: GuardianService.self)
-//
-//        print("getTransltion")
-//
-//        guard let asset = NSDataAsset(name: translationName) else {
-//            fatalError("Missing data asset: NamedColors")
-//        }
-//
-//        let decoder = JSONDecoder()
-//        let jj = try? decoder.decode(Translation.self, from: asset.data)
-//
-//        self.translationMap = jj?.error
-//        
-////        for (key, value) in jj?.error {
-////            print("\(key):\(value)")
-////        }
-//
-//    }
     
     class DeviceInfoService {
         var authCode: String!
