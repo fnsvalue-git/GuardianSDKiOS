@@ -584,7 +584,7 @@ public class GuardianService{
             var params = data
 //            params["authType"] = authType
 //            params["iconSelect"] = iconSelect
-            params["userKey"] = userKey
+            params["deviceId"] = getUUid()
             
             self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
                 setUserKey(userKey: userKey)
@@ -837,7 +837,6 @@ public class GuardianService{
                             api: String,
                             successCallBack : @escaping(JSON) -> Void,
                             errorCallBack: @escaping(Int, String) -> Void) {
-        
         
         let url = Domain.apiDomain + api
                                 
