@@ -9,7 +9,6 @@
 import Foundation
 import StompClientLib
 
-
 public class StompSocketService : StompClientLibDelegate {
     
     public static let sharedInstance = StompSocketService()

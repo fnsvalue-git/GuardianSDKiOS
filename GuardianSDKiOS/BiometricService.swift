@@ -50,86 +50,89 @@ open class BiometricService{
             }
         }
         
-        // TODO: - 인증 등록 확인 임시 제거
-//        if(!hasRegisterBiometric()) {
-//            return RtCode.BIOMETRIC_NOT_ENROLLED_APP
-//        }
-        
         return RtCode.AUTH_SUCCESS
     }
     
-    public func authenticate(msg: String, onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String?)-> Void) {
+    public func authenticate(msg: String, onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String?)-> Void) {
         let initCode = initBiometric()
         if(initCode != .AUTH_SUCCESS) {
-            onFailed(initCode, "")
+            onSuccess(initCode, getLocalizationMessage(rtCode : initCode), self.getBiometricTypeList())
         } else {
-            let context = LAContext()
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Biometric", reply:{(success,e) in
-                if success {
-                    DispatchQueue.main.async {
-                        print("Biometric auth success")
-                        onSuccess(RtCode.AUTH_SUCCESS, "")
-                    }
-                } else {
-                    DispatchQueue.main.async {
-                        switch self.error {
-                        // 시스템(운영체제)에 의해 인증 과정이 종료 LAError.systemCancel:
-    //                            case LAError.systemCancel:
-    //                                RtCode.BIO_
-    //                                self.notifyUser(msg: "시스템에 의해 중단되었습니다.", err: error?.localizedDescription)
-    //                            // 사용자가 취소함 LAError.userCancel
-    //                            case LAError.userCancel:
-    //                                self.notifyUser(msg: "인증이 취소 되었습니다.", err: error?.localizedDescription)
-                        // 터치아이디 대신 암호 입력 버튼을 누른경우(터치아이디 1회 틀리면 암호 입력 버튼 나옴) LAError.userFallback
-    //                            case LAError.userFallback:
-    //                                self.notifyUser(msg: "터치 아이디 인증", err: "암호 입력을 선택했습니다.")
-                        default:
-                            onFailed(RtCode.BIOMETRIC_AUTH_FAILED, self.error?.localizedDescription)
+            if(!hasRegisterBiometric()) {
+                onSuccess(RtCode.BIOMETRIC_NOT_ENROLLED_APP, getLocalizationMessage(rtCode : RtCode.BIOMETRIC_NOT_ENROLLED_APP), self.getBiometricTypeList())
+            } else {
+                let context = LAContext()
+                if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil){
+                    if let domainState = context.evaluatedPolicyDomainState {
+                        let strData = String(data: domainState.base64EncodedData(), encoding: .utf8)
+                        let cData = KeychainService.loadPassword(service: getPackageName(), account: "biometrics")
+                        if(strData != cData) {
+                            onSuccess(RtCode.BIOMETRIC_CHANGE_ENROLLED, self.getLocalizationMessage(rtCode : RtCode.BIOMETRIC_CHANGE_ENROLLED), self.getBiometricTypeList())
+                        } else {
+                            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Biometric", reply:{(success,e) in
+                                if success {
+                                    DispatchQueue.main.async {
+                                        print("Biometric auth success")
+                                        onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
+                                    }
+                                } else {
+                                    DispatchQueue.main.async {
+                                        switch self.error {
+                                        // 시스템(운영체제)에 의해 인증 과정이 종료 LAError.systemCancel:
+                    //                            case LAError.systemCancel:
+                    //                                RtCode.BIO_
+                    //                                self.notifyUser(msg: "시스템에 의해 중단되었습니다.", err: error?.localizedDescription)
+                    //                            // 사용자가 취소함 LAError.userCancel
+                    //                            case LAError.userCancel:
+                    //                                self.notifyUser(msg: "인증이 취소 되었습니다.", err: error?.localizedDescription)
+                                        // 터치아이디 대신 암호 입력 버튼을 누른경우(터치아이디 1회 틀리면 암호 입력 버튼 나옴) LAError.userFallback
+                    //                            case LAError.userFallback:
+                    //                                self.notifyUser(msg: "터치 아이디 인증", err: "암호 입력을 선택했습니다.")
+                                        default:
+                                            onFailed(RtCode.BIOMETRIC_AUTH_FAILED, self.error?.localizedDescription)
+                                        }
+                                    }
+                                }
+                            })
                         }
                     }
                 }
-            })
+            }
         }
     }
     
-    public func hasNewBiometricEnrolled(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
-        if(!hasRegisterBiometric()) {
-            onFailed(RtCode.BIOMETRIC_NOT_ENROLLED_APP, "")
+    public func hasNewBiometricEnrolled(onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
+        let initCode = initBiometric()
+        if(initCode != .AUTH_SUCCESS) {
+            onSuccess(initCode, getLocalizationMessage(rtCode : initCode), self.getBiometricTypeList())
         } else {
-            self.newBioContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: strBioType, reply:{(success,e) in
-                if success {
-                    DispatchQueue.main.async {
-                        let context = LAContext()
-                        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil){
-                            if let domainState = context.evaluatedPolicyDomainState {
-                                let strData = String(data: domainState.base64EncodedData(), encoding: .utf8)
-                                let cData = KeychainService.loadPassword(service: getPackageName(), account: "biometrics")
-                                if(strData != cData) {
-                                    onSuccess(RtCode.BIOMETRIC_CHANGE_ENROLLED, "")
-                                } else {
-                                    onSuccess(RtCode.BIOMETRIC_NORMAL, "")
-                                }
+            if(!hasRegisterBiometric()) {
+                onSuccess(RtCode.BIOMETRIC_NOT_ENROLLED_APP, getLocalizationMessage(rtCode : RtCode.BIOMETRIC_NOT_ENROLLED_APP), getBiometricTypeList())
+            } else {
+                DispatchQueue.main.async {
+                    let context = LAContext()
+                    if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil){
+                        if let domainState = context.evaluatedPolicyDomainState {
+                            let strData = String(data: domainState.base64EncodedData(), encoding: .utf8)
+                            let cData = KeychainService.loadPassword(service: getPackageName(), account: "biometrics")
+                            if(strData != cData) {
+                                onSuccess(RtCode.BIOMETRIC_CHANGE_ENROLLED, self.getLocalizationMessage(rtCode : RtCode.BIOMETRIC_CHANGE_ENROLLED), self.getBiometricTypeList())
+                            } else {
+                                onSuccess(RtCode.BIOMETRIC_NORMAL, self.getLocalizationMessage(rtCode : RtCode.BIOMETRIC_NORMAL), self.getBiometricTypeList())
                             }
                         }
                     }
-                } else {
-                    DispatchQueue.main.async {
-                        switch self.error {
-                        default:
-                            onFailed(RtCode.BIOMETRIC_AUTH_FAILED, "")
-                        }
-                    }
                 }
-            })
+            }
         }
     }
     
-    public func registerBiometric(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
-        initBiometric()
-        do {
-            if(hasRegisterBiometric()) {
-                onFailed(RtCode.BIOMETRIC_ENROLLED_DUPLICATION, "")
-            } else {
+    public func registerBiometric(onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
+        let initCode = initBiometric()
+        if(initCode != .AUTH_SUCCESS) {
+            onSuccess(initCode, getLocalizationMessage(rtCode : initCode), getBiometricTypeList())
+        } else {
+            do {
                 let context = LAContext()
                 context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: strBioType, reply:{(success,e) in
                     if success {
@@ -138,7 +141,7 @@ open class BiometricService{
                                 if let domainState = context.evaluatedPolicyDomainState {
                                     if let strData = String(data: domainState.base64EncodedData(), encoding: .utf8) {
                                         KeychainService.savePassword(service: getPackageName(), account: "biometrics", data: strData)
-                                        onSuccess(RtCode.AUTH_SUCCESS, "")
+                                        onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
                                     }
                                 }
                             }
@@ -152,41 +155,57 @@ open class BiometricService{
                         }
                     }
                 })
+            } catch {
+                onFailed(RtCode.BIOMETRIC_ERROR, "")
             }
-        } catch {
-            onFailed(RtCode.BIOMETRIC_ERROR, "")
         }
     }
     
-    public func reRegisterBiometric(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
-        initBiometric()
-        let context = LAContext()
-        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: strBioType, reply:{(success,e) in
-            if success {
-                DispatchQueue.main.async {
-                    if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
-                        if let domainState = context.evaluatedPolicyDomainState {
-                            if let strData = String(data: domainState.base64EncodedData(), encoding: .utf8) {
-                                
-                                if(self.hasRegisterBiometric()) {
-                                    KeychainService.updatePassword(service: getPackageName(), account: "biometrics", data: strData)
-                                } else {
-                                    KeychainService.savePassword(service: getPackageName(), account: "biometrics", data: strData)
+    public func resetBiometric(onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
+        let initCode = initBiometric()
+        if(initCode != .AUTH_SUCCESS) {
+            onSuccess(initCode, getLocalizationMessage(rtCode : initCode), getBiometricTypeList())
+        } else {
+            let context = LAContext()
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: strBioType, reply:{(success,e) in
+                if success {
+                    DispatchQueue.main.async {
+                        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+                            if let domainState = context.evaluatedPolicyDomainState {
+                                if let strData = String(data: domainState.base64EncodedData(), encoding: .utf8) {
+                                    
+                                    if(self.hasRegisterBiometric()) {
+                                        KeychainService.updatePassword(service: getPackageName(), account: "biometrics", data: strData)
+                                    } else {
+                                        KeychainService.savePassword(service: getPackageName(), account: "biometrics", data: strData)
+                                    }
+                                    onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
                                 }
-                                onSuccess(RtCode.AUTH_SUCCESS, "")
                             }
                         }
                     }
-                }
-            } else {
-                DispatchQueue.main.async {
-                    switch self.error! {
-                    default:
-                        onFailed(RtCode.BIOMETRIC_AUTH_FAILED, self.error!.localizedDescription)
+                } else {
+                    DispatchQueue.main.async {
+                        switch self.error! {
+                        default:
+                            onFailed(RtCode.BIOMETRIC_AUTH_FAILED, self.error!.localizedDescription)
+                        }
                     }
                 }
-            }
-        })
+            })
+        }
+    }
+    
+    private func getBiometricTypeList() -> Array<[String:String]> {
+        var returnValue = Array<[String:String]>()
+        var dic = [String:String]()
+        dic["type"] = self.strBioType
+        returnValue.append(dic)
+        return returnValue
+    }
+    
+    private func getLocalizationMessage(rtCode : RtCode) -> String {
+        return LocalizationMessage.sharedInstance.getLocalization(code: rtCode.rawValue) as? String ?? ""
     }
     
     private func hasRegisterBiometric() -> Bool {

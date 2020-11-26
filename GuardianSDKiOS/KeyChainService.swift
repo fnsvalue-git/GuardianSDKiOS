@@ -52,12 +52,12 @@ public class KeychainService: NSObject {
     }
     
     public class func hasPassword(service: String, account:String) -> Bool {
-        if let keychainQuery: NSMutableDictionary = NSMutableDictionary(objects: [kSecClassGenericPasswordValue, service, account, kCFBooleanTrue], forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue]) {
-            return true
-        } else {
-            return false
-        }
-    }
+         if let keychainQuery: NSMutableDictionary = NSMutableDictionary(objects: [kSecClassGenericPasswordValue, service, account, kCFBooleanTrue], forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue]) as? NSMutableDictionary {
+             return true
+         } else {
+             return false
+         }
+     }
 
 
     class func savePassword(service: String, account:String, data: String) {
