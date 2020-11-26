@@ -35,7 +35,13 @@ public class KeychainService: NSObject {
             }
         }
     }
-
+    
+    public class func checkSavedToKeychain() {
+        if !UserDefaults.standard.bool(forKey: "isSavedToKeychain") {
+            // Delete data from Keychain
+            self.removePassword(service: getPackageName(), account: "biometrics")
+        }
+    }
 
     public class func removePassword(service: String, account:String) {
         // Instantiate a new default keychain query
