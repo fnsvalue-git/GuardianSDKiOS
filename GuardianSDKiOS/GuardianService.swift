@@ -404,7 +404,7 @@ public class GuardianService{
     
     }
     
-    public func requestMember(onSuccess: @escaping(RtCode, String, Bool)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
+    public func requestMember(onSuccess: @escaping(RtCode, String, [String:String])-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         let apiUrl = "device/check"
         var params = getCommonParam()
         params["deviceId"] = getUUid()
@@ -413,17 +413,20 @@ public class GuardianService{
                 
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
+            guard let authData = data["data"] as? JSON else {
+                onFailed(RtCode.API_ERROR, rtMsg)
+                return
+            }
             
             if (rtCode == RtCode.AUTH_SUCCESS.rawValue) {
-                let isRegister : Bool = data["data"].bool ?? false
-                if(isRegister) {
-                    onSuccess(RtCode.AUTH_SUCCESS, rtMsg, isRegister)
-                } else {
-                    onSuccess(RtCode.AUTH_SUCCESS, LocalizationMessage.sharedInstance.getLocalization(code: RtCode.MEMBER_NOT_REGISTER.rawValue) as? String ?? "", isRegister)
-                }
+                var dic = [String:String]()
+                dic["userKey"] = authData["userKey"].string ?? ""
+                dic["name"] = authData["name"].string ?? ""
+                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
             } else if(rtCode == RtCode.MEMBER_NOT_REGISTER.rawValue){
+                onFailed(RtCode.API_ERROR, "\(rtCode)")
 //                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
-                onSuccess(RtCode.MEMBER_NOT_REGISTER, LocalizationMessage.sharedInstance.getLocalization(code: RtCode.MEMBER_NOT_REGISTER.rawValue) as? String ?? "", false)
+//                onSuccess(RtCode.MEMBER_NOT_REGISTER, LocalizationMessage.sharedInstance.getLocalization(code: RtCode.MEMBER_NOT_REGISTER.rawValue) as? String ?? "", false)
             } else {
                 onFailed(RtCode.API_ERROR, "\(rtCode)")
             }
