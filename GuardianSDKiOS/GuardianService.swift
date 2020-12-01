@@ -193,16 +193,8 @@ func getUUid() -> String {
     let packageName = getPackageName()
     let deviceId =  "\(packageName)\(UIDevice.current.identifierForVendor!.uuidString)"
     let encryptDeivceId = encryptAES256(value: deviceId, seckey: packageName)
-    return encryptDeivceId
-//
-//    if let keyChainDeviceId =  KeychainService.loadPassword(service: packageName, account:"deviceId"){
-//        return keyChainDeviceId
-//    } else {
-//        let deviceId =  "\(packageName)\(UIDevice.current.identifierForVendor!.uuidString)"
-//        let encryptDeivceId = encryptAES256(value: deviceId, seckey: packageName)
-//        KeychainService.savePassword(service: packageName, account:"deviceId",data:encryptDeivceId)
-//        return encryptDeivceId
-//    }
+    let trimStr = encryptDeivceId.trimmingCharacters(in: .whitespacesAndNewlines)
+    return trimStr
 }
 
 func getPackageName() -> String {
@@ -425,8 +417,6 @@ public class GuardianService{
                 onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
             } else if(rtCode == RtCode.MEMBER_NOT_REGISTER.rawValue){
                 onFailed(RtCode.API_ERROR, "\(rtCode)")
-//                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
-//                onSuccess(RtCode.MEMBER_NOT_REGISTER, LocalizationMessage.sharedInstance.getLocalization(code: RtCode.MEMBER_NOT_REGISTER.rawValue) as? String ?? "", false)
             } else {
                 onFailed(RtCode.API_ERROR, "\(rtCode)")
             }
@@ -610,10 +600,10 @@ public class GuardianService{
               }
               
                 params["deviceId"] = getUUid()
-                params["packageName"] = getPackageName()
+                params["appPackage"] = getPackageName()
                 params["os"] = "CMMDOS002"
                 params["osVersion"] = getOSVersion()
-//                params["appVersion"] = getAppVersion()
+                params["appVersion"] = getAppVersion()
                 params["deiceManufacturer"] = "apple"
                 params["deviceName"] = Device.current.description
               
@@ -658,10 +648,10 @@ public class GuardianService{
             }
             
             params["deviceId"] = getUUid()
-//            params["packageName"] = getPackageName()
-//            params["os"] = "CMMDOS002"
-//            params["osVersion"] = getOSVersion()
-//            params["appVersion"] = getAppVersion()
+            params["appPackage"] = getPackageName()
+            params["os"] = "CMMDOS002"
+            params["osVersion"] = getOSVersion()
+            params["appVersion"] = getAppVersion()
             params["deiceManufacturer"] = "apple"
             params["deviceName"] = Device.current.description
             
@@ -1068,7 +1058,7 @@ public class GuardianService{
         if !self.clientKey.isEmpty {
             params["clientKey"] = self.clientKey
         } else {
-            params["packageName"] = getPackageName()
+            params["appPackage"] = getPackageName()
             params["os"] = "IOS"
         }
         return params

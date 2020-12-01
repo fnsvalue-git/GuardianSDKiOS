@@ -58,7 +58,7 @@ public class StompSocketService : StompClientLibDelegate {
         if dataMap["clientKey"] != nil {
             result = "\(replaceUrl)/ws/v3/app/websocket?clientKey=\(dataMap["clientKey"]!)&deviceId=\(dataMap["deviceId"]!)&channelKey=\(dataMap["channelKey"]!)"
         } else {
-            result = "\(replaceUrl)/ws/v3/app/websocket?os=\(dataMap["os"]!)&packageName=\(dataMap["packageName"]!)&deviceId=\(dataMap["deviceId"]!)&channelKey=\(dataMap["channelKey"]!)"
+            result = "\(replaceUrl)/ws/v3/app/websocket?os=\(dataMap["os"]!)&appPackage=\(dataMap["packageName"]!)&deviceId=\(dataMap["deviceId"]!)&channelKey=\(dataMap["channelKey"]!)"
         }
         return result
     }
