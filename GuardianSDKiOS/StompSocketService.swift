@@ -55,10 +55,22 @@ public class StompSocketService : StompClientLibDelegate {
         var result : String
         let replaceUrl = getBaseUrlToWebSocketUrl()
         
+        let escapingCharacterSet: CharacterSet = {
+            var cs = CharacterSet.alphanumerics
+            cs.insert(charactersIn: "-_.~")
+            return cs
+        }()
+        
+        let deviceId : String = dataMap["deviceId"]!.addingPercentEncoding(withAllowedCharacters: escapingCharacterSet)!
+        let channelKey : String = dataMap["channelKey"]!.addingPercentEncoding(withAllowedCharacters: escapingCharacterSet)!
+        
         if dataMap["clientKey"] != nil {
-            result = "\(replaceUrl)/ws/v3/app/websocket?clientKey=\(dataMap["clientKey"]!)&deviceId=\(dataMap["deviceId"]!)&channelKey=\(dataMap["channelKey"]!)"
+            let clientKey : String = dataMap["clientKey"]!.addingPercentEncoding(withAllowedCharacters: escapingCharacterSet)!
+            result = "\(replaceUrl)/ws/v3/app/websocket?clientKey=\(clientKey)&deviceId=\(deviceId)&channelKey=\(channelKey)"
         } else {
-            result = "\(replaceUrl)/ws/v3/app/websocket?os=\(dataMap["os"]!)&appPackage=\(dataMap["packageName"]!)&deviceId=\(dataMap["deviceId"]!)&channelKey=\(dataMap["channelKey"]!)"
+            let os : String = dataMap["os"]!.addingPercentEncoding(withAllowedCharacters: escapingCharacterSet)!
+            let packageName : String = dataMap["packageName"]!.addingPercentEncoding(withAllowedCharacters: escapingCharacterSet)!
+            result = "\(replaceUrl)/ws/v3/app/websocket?os=\(os)&appPackage=\(packageName)&deviceId=\(deviceId)&channelKey=\(channelKey)"
         }
         return result
     }
