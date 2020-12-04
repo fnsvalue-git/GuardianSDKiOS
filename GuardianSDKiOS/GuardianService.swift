@@ -633,7 +633,7 @@ public class GuardianService{
     
       DispatchQueue.main.async {
         DeviceInfoService().getDeviceInfo{ (data:Dictionary<String, Any>) in
-            let userKey = memberObject["userKey"]
+            let userKey = memberObject["userKey"] as? String ?? ""
             let apiUrl = "users/\(userKey)/device"
           
             var params = data
@@ -655,7 +655,7 @@ public class GuardianService{
             params["deiceManufacturer"] = "apple"
             params["deviceName"] = Device.current.description
             
-            self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+            self.callHttpPut(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
                 let rtCode = data["rtCode"].intValue
                 let rtMsg = data["rtMsg"].string ?? ""
                 
@@ -923,7 +923,7 @@ public class GuardianService{
         
     }
     
-    private func callHttpPut(params: Dictionary<String,String>,
+    private func callHttpPut(params: Dictionary<String,Any>,
                             api: String,
                             successCallBack : @escaping(JSON) -> Void,
                             errorCallBack: @escaping(Int, String) -> Void) {
@@ -1268,10 +1268,18 @@ public class GuardianService{
 
 public func encryptAES256(value: String ,seckey: String) -> String {
     do {
-        let idx1 = seckey.index(seckey.startIndex, offsetBy: 31)
-        let idx2 = seckey.index(seckey.startIndex, offsetBy: 15)
-        let skey = String(seckey[...idx1])
-        let siv = String(seckey[...idx2])
+        let seckeyCustom : String
+        if seckey.count >= 31 {
+            seckeyCustom = seckey
+        } else {
+            seckeyCustom = seckey + "FNSVALUEfnsvalueFNSVALUEfnsvalue"
+        }
+        
+        let idx1 = seckeyCustom.index(seckeyCustom.startIndex, offsetBy: 31)
+        let idx2 = seckeyCustom.index(seckeyCustom.startIndex, offsetBy: 15)
+        
+        let skey = String(seckeyCustom[...idx1])
+        let siv = String(seckeyCustom[...idx2])
         
         let key : [UInt8] = Array(skey.utf8)
         let iv : [UInt8] = Array(siv.utf8)
