@@ -35,7 +35,13 @@ public class KeychainService: NSObject {
             }
         }
     }
-
+    
+    public class func checkSavedToKeychain() {
+        if !UserDefaults.standard.bool(forKey: "isSavedToKeychain") {
+            // Delete data from Keychain
+            self.removePassword(service: getPackageName(), account: "biometrics")
+        }
+    }
 
     public class func removePassword(service: String, account:String) {
         // Instantiate a new default keychain query
@@ -52,12 +58,12 @@ public class KeychainService: NSObject {
     }
     
     public class func hasPassword(service: String, account:String) -> Bool {
-        if let keychainQuery: NSMutableDictionary = NSMutableDictionary(objects: [kSecClassGenericPasswordValue, service, account, kCFBooleanTrue], forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue]) {
-            return true
-        } else {
-            return false
-        }
-    }
+         if let keychainQuery: NSMutableDictionary = NSMutableDictionary(objects: [kSecClassGenericPasswordValue, service, account, kCFBooleanTrue], forKeys: [kSecClassValue, kSecAttrServiceValue, kSecAttrAccountValue, kSecReturnDataValue]) as? NSMutableDictionary {
+             return true
+         } else {
+             return false
+         }
+     }
 
 
     class func savePassword(service: String, account:String, data: String) {
