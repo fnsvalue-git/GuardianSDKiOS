@@ -416,9 +416,9 @@ public class GuardianService{
                 dic["name"] = authData["name"].string ?? ""
                 onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
             } else if(rtCode == RtCode.MEMBER_NOT_REGISTER.rawValue){
-                onFailed(RtCode.API_ERROR, "\(rtCode)")
+                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             } else {
-                onFailed(RtCode.API_ERROR, "\(rtCode)")
+                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
             
         }, errorCallBack: {(errorCode, errorMsg) -> Void in
@@ -497,6 +497,8 @@ public class GuardianService{
         self._authRequestProcess = onProcess
         self._authRequestFailed = onFailed
         
+        self._authRequestProcess(AuthStatus.CREATE_CHANNEL.rawValue)
+        
         self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
             
             let rtCode = data["rtCode"].intValue
@@ -507,6 +509,8 @@ public class GuardianService{
                     onFailed(RtCode.API_ERROR, rtMsg)
                     return
                 }
+                
+                self._authRequestProcess(AuthStatus.SELECT_NODES.rawValue)
                 
                 self.authType = authData["authType"].intValue
                 self.connectIp = authData["connectIp"].string ?? ""
