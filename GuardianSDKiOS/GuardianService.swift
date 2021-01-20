@@ -224,13 +224,13 @@ public class GuardianService{
         
     public static let sharedInstance = GuardianService()
     
-    public var _authRequestSuccess : (RtCode, String, Int, String) -> Void
+    public var _authRequestSuccess : (RtCode, String, Int, String, String) -> Void
     public var _authRequestProcess : (String) -> Void
     public var _authRequestFailed : (RtCode, String) -> Void
     public var _onSubscribeAuthStatus : (String) -> Void
     
     private init() {
-        func initOnSuccess(rtcode: RtCode, rtMsg: String, authType: Int, connectIp: String) -> Void{}
+        func initOnSuccess(rtcode: RtCode, rtMsg: String, authType: Int, connectIp: String, userKey: String) -> Void{}
         func initOnProcess(status : String) -> Void{}
         func initOnFailed(rtcode: RtCode, rtMsg: String) -> Void{}
         func initOnSubscribeAuthStatus(status : String) -> Void{}
@@ -252,6 +252,16 @@ public class GuardianService{
     
     public func getBaseUrl() -> String {
         return Domain.baseUrl
+    }
+    
+    private static var _userKey : String = ""
+    public var userKey : String {
+        get  {
+            return GuardianService._userKey
+        }
+        set(value) {
+            GuardianService._userKey = value
+        }
     }
     
     private static var _clientKey : String = ""
@@ -363,7 +373,7 @@ public class GuardianService{
 //                        self.notifyAuthStatus(status: status!)
                         
                         if status == AuthStatus.COMPLETE_VERIFICATION_OF_NODES.rawValue {
-                            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp)
+                            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey)
                         }
                         
                         if status! != AuthStatus.AUTH_COMPLETED.rawValue ||
@@ -384,7 +394,7 @@ public class GuardianService{
                 }
             })
           case RtCode.PUSH_LOGIN_SUCCESS.rawValue:
-            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp)
+            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey)
           case RtCode.PUSH_LOGIN_FAIL.rawValue:
             self._authRequestFailed(RtCode.AUTH_FAIL, "")
 //          case RtCode.PUSH_LOGIN_CANCEL.rawValue:
@@ -480,7 +490,7 @@ public class GuardianService{
         })
     }
     
-    public func requestAuthRequest(onSuccess: @escaping(RtCode, String, Int, String)-> Void, onProcess: @escaping(String) -> Void,  onFailed: @escaping(RtCode, String)-> Void) {
+    public func requestAuthRequest(onSuccess: @escaping(RtCode, String, Int, String, String)-> Void, onProcess: @escaping(String) -> Void,  onFailed: @escaping(RtCode, String)-> Void) {
         let apiUrl = "auth/nodes"
         
         let enCodeCK = encryptAES256(value: self.channelKey, seckey: self.channelKey)
@@ -514,6 +524,7 @@ public class GuardianService{
                 
                 self.authType = authData["authType"].intValue
                 self.connectIp = authData["connectIp"].string ?? ""
+                self.userKey = authData["userKey"].string ?? ""
                 let authTimeRemaining = authData["authTimeRemaining"].doubleValue
                 
                 // Auth Timer start
