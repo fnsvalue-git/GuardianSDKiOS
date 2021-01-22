@@ -78,7 +78,7 @@ public class LocalizationMessage {
         "7000": "[7000] Can't verify key.",
         "9000": "[9000] Biometric normal",
         "9001": "[9001] Biometric Not Available",
-        "9002": "[9002] Biometric Lock out",
+        "9002": "[9002] This iOS device Face ID/Touch ID is locked.",
         "9003": "[9003] This iOS device does not support hardware.",
         "9004": "[9004] This iOS device does not registered Biometric.",
         "9005": "[9005] This Application does not registered Biometric.",

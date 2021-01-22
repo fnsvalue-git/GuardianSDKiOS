@@ -424,6 +424,7 @@ public class GuardianService{
                 var dic = [String:String]()
                 dic["userKey"] = authData["userKey"].string ?? ""
                 dic["name"] = authData["name"].string ?? ""
+                dic["email"] = authData["email"].string ?? ""
                 onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
             } else if(rtCode == RtCode.MEMBER_NOT_REGISTER.rawValue){
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)

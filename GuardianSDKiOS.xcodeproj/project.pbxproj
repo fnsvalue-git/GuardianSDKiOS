@@ -336,6 +336,7 @@
 					"$(BUILT_PRODUCTS_DIR)/Alamofire",
 					"$(BUILT_PRODUCTS_DIR)/SwiftyJSON",
 					"$(BUILT_PRODUCTS_DIR)/StompClientLib",
+					"$(BUILT_PRODUCTS_DIR)/DeviceKit",
 				);
 				INFOPLIST_FILE = GuardianSDKiOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";

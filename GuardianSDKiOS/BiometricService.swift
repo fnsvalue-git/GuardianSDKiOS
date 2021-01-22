@@ -23,6 +23,7 @@ open class BiometricService{
     private func initBiometric() -> RtCode {
         // Touch ID & Face ID not allow
         let context = LAContext()
+        context.localizedFallbackTitle = ""
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error){
             switch context.biometryType {
             case .faceID:
@@ -56,12 +57,13 @@ open class BiometricService{
     public func authenticate(msg: String, onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String?)-> Void) {
         let initCode = initBiometric()
         if(initCode != .AUTH_SUCCESS) {
-            onSuccess(initCode, getLocalizationMessage(rtCode : initCode), self.getBiometricTypeList())
+            onFailed(initCode, getLocalizationMessage(rtCode : initCode))
         } else {
             if(!hasRegisterBiometric()) {
-                onSuccess(RtCode.BIOMETRIC_NOT_ENROLLED_APP, getLocalizationMessage(rtCode : RtCode.BIOMETRIC_NOT_ENROLLED_APP), self.getBiometricTypeList())
+                onFailed(RtCode.BIOMETRIC_NOT_ENROLLED_APP, getLocalizationMessage(rtCode : RtCode.BIOMETRIC_NOT_ENROLLED_APP))
             } else {
                 let context = LAContext()
+                context.localizedFallbackTitle = ""
                 if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil){
                     if let domainState = context.evaluatedPolicyDomainState {
                         let strData = String(data: domainState.base64EncodedData(), encoding: .utf8)
@@ -69,28 +71,32 @@ open class BiometricService{
                         if(strData != cData) {
                             onSuccess(RtCode.BIOMETRIC_CHANGE_ENROLLED, self.getLocalizationMessage(rtCode : RtCode.BIOMETRIC_CHANGE_ENROLLED), self.getBiometricTypeList())
                         } else {
-                            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Biometric", reply:{(success,e) in
+                            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Biometric", reply:{(success, error) in
                                 if success {
                                     DispatchQueue.main.async {
-                                        print("Biometric auth success")
                                         onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
                                     }
                                 } else {
                                     DispatchQueue.main.async {
-                                        switch self.error {
-                                        // 시스템(운영체제)에 의해 인증 과정이 종료 LAError.systemCancel:
-                    //                            case LAError.systemCancel:
-                    //                                RtCode.BIO_
-                    //                                self.notifyUser(msg: "시스템에 의해 중단되었습니다.", err: error?.localizedDescription)
-                    //                            // 사용자가 취소함 LAError.userCancel
-                    //                            case LAError.userCancel:
-                    //                                self.notifyUser(msg: "인증이 취소 되었습니다.", err: error?.localizedDescription)
-                                        // 터치아이디 대신 암호 입력 버튼을 누른경우(터치아이디 1회 틀리면 암호 입력 버튼 나옴) LAError.userFallback
-                    //                            case LAError.userFallback:
-                    //                                self.notifyUser(msg: "터치 아이디 인증", err: "암호 입력을 선택했습니다.")
+                                        let message: String
+                                        switch error {
+                                        case LAError.authenticationFailed?:
+                                            message = "There was a problem verifying your identity."
+                                        case LAError.userCancel?:
+                                            message = "You pressed cancel."
+                                        case LAError.userFallback?:
+                                            message = "You pressed password."
+                                        case LAError.biometryNotAvailable?:
+                                            message = "Face ID/Touch ID is not available."
+                                        case LAError.biometryNotEnrolled?:
+                                            message = "Face ID/Touch ID is not set up."
+                                        case LAError.biometryLockout?:
+                                            message = "Face ID/Touch ID is locked."
                                         default:
-                                            onFailed(RtCode.BIOMETRIC_AUTH_FAILED, self.error?.localizedDescription)
+                                            message = "Face ID/Touch ID may not be configured"
                                         }
+                                            
+                                        onFailed(RtCode.BIOMETRIC_AUTH_FAILED, message)
                                     }
                                 }
                             })
@@ -104,13 +110,14 @@ open class BiometricService{
     public func hasNewBiometricEnrolled(onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         let initCode = initBiometric()
         if(initCode != .AUTH_SUCCESS) {
-            onSuccess(initCode, getLocalizationMessage(rtCode : initCode), self.getBiometricTypeList())
+            onFailed(initCode, getLocalizationMessage(rtCode : initCode))
         } else {
             if(!hasRegisterBiometric()) {
-                onSuccess(RtCode.BIOMETRIC_NOT_ENROLLED_APP, getLocalizationMessage(rtCode : RtCode.BIOMETRIC_NOT_ENROLLED_APP), getBiometricTypeList())
+                onFailed(RtCode.BIOMETRIC_NOT_ENROLLED_APP, getLocalizationMessage(rtCode : RtCode.BIOMETRIC_NOT_ENROLLED_APP))
             } else {
                 DispatchQueue.main.async {
                     let context = LAContext()
+                    context.localizedFallbackTitle = ""
                     if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil){
                         if let domainState = context.evaluatedPolicyDomainState {
                             let strData = String(data: domainState.base64EncodedData(), encoding: .utf8)
@@ -130,31 +137,56 @@ open class BiometricService{
     public func registerBiometric(onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         let initCode = initBiometric()
         if(initCode != .AUTH_SUCCESS) {
-            onSuccess(initCode, getLocalizationMessage(rtCode : initCode), getBiometricTypeList())
+            onFailed(initCode, getLocalizationMessage(rtCode : initCode))
         } else {
             do {
                 let context = LAContext()
-                context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: strBioType, reply:{(success,e) in
-                    if success {
-                        DispatchQueue.main.async {
-                            if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
-                                if let domainState = context.evaluatedPolicyDomainState {
-                                    if let strData = String(data: domainState.base64EncodedData(), encoding: .utf8) {
-                                        KeychainService.savePassword(service: getPackageName(), account: "biometrics", data: strData)
-                                        onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        DispatchQueue.main.async {
-                            switch self.error! {
-                            default:
-                                onFailed(RtCode.BIOMETRIC_AUTH_FAILED, self.error!.localizedDescription)
+                context.localizedFallbackTitle = ""
+//                context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: strBioType, reply:{(success, error) in
+//                    if success {
+//                        DispatchQueue.main.async {
+//                            if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+//                                if let domainState = context.evaluatedPolicyDomainState {
+//                                    if let strData = String(data: domainState.base64EncodedData(), encoding: .utf8) {
+//                                        KeychainService.savePassword(service: getPackageName(), account: "biometrics", data: strData)
+//                                        onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    } else {
+//                        DispatchQueue.main.async {
+//                            let message: String
+//                            switch error {
+//                            case LAError.authenticationFailed?:
+//                                message = "There was a problem verifying your identity."
+//                            case LAError.userCancel?:
+//                                message = "You pressed cancel."
+//                            case LAError.userFallback?:
+//                                message = "You pressed password."
+//                            case LAError.biometryNotAvailable?:
+//                                message = "Face ID/Touch ID is not available."
+//                            case LAError.biometryNotEnrolled?:
+//                                message = "Face ID/Touch ID is not set up."
+//                            case LAError.biometryLockout?:
+//                                message = "Face ID/Touch ID is locked."
+//                            default:
+//                                message = "Face ID/Touch ID may not be configured"
+//                            }
+//                            onFailed(RtCode.BIOMETRIC_AUTH_FAILED, message)
+//                        }
+//                    }
+//                })
+                DispatchQueue.main.async {
+                    if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+                        if let domainState = context.evaluatedPolicyDomainState {
+                            if let strData = String(data: domainState.base64EncodedData(), encoding: .utf8) {
+                                KeychainService.savePassword(service: getPackageName(), account: "biometrics", data: strData)
+                                onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
                             }
                         }
                     }
-                })
+                }
             } catch {
                 onFailed(RtCode.BIOMETRIC_ERROR, "")
             }
@@ -164,10 +196,11 @@ open class BiometricService{
     public func resetBiometric(onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         let initCode = initBiometric()
         if(initCode != .AUTH_SUCCESS) {
-            onSuccess(initCode, getLocalizationMessage(rtCode : initCode), getBiometricTypeList())
+            onFailed(initCode, getLocalizationMessage(rtCode : initCode))
         } else {
             let context = LAContext()
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: strBioType, reply:{(success,e) in
+            context.localizedFallbackTitle = ""
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: strBioType, reply:{(success, error) in
                 if success {
                     DispatchQueue.main.async {
                         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
@@ -186,10 +219,25 @@ open class BiometricService{
                     }
                 } else {
                     DispatchQueue.main.async {
-                        switch self.error! {
+                        let message: String
+                        switch error {
+                        case LAError.authenticationFailed?:
+                            message = "There was a problem verifying your identity."
+                        case LAError.userCancel?:
+                            message = "You pressed cancel."
+                        case LAError.userFallback?:
+                            message = "You pressed password."
+                        case LAError.biometryNotAvailable?:
+                            message = "Face ID/Touch ID is not available."
+                        case LAError.biometryNotEnrolled?:
+                            message = "Face ID/Touch ID is not set up."
+                        case LAError.biometryLockout?:
+                            message = "Face ID/Touch ID is locked."
                         default:
-                            onFailed(RtCode.BIOMETRIC_AUTH_FAILED, self.error!.localizedDescription)
+                            message = "Face ID/Touch ID may not be configured"
                         }
+                            
+                        onFailed(RtCode.BIOMETRIC_AUTH_FAILED, message)
                     }
                 }
             })
