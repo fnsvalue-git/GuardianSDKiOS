@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		2333280323B4A4580005F329 /* KeyChainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2333280223B4A4570005F329 /* KeyChainService.swift */; };
 		23ACF438233322B800FA4246 /* GuardianFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 23ACF436233322B800FA4246 /* GuardianFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		692906A025BFDB680068DC88 /* StompClientLib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6BF7484D2507770F0075BBA8 /* StompClientLib.framework */; };
+		692906A325BFDB730068DC88 /* SocketRocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6BF74851250777420075BBA8 /* SocketRocket.framework */; };
 		6B35A2C325425ADA002AB1EF /* BiometricService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B35A2BC25425ADA002AB1EF /* BiometricService.swift */; };
 		6B35A2C425425ADA002AB1EF /* StompSocketService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B35A2BD25425ADA002AB1EF /* StompSocketService.swift */; };
 		6B35A2C525425ADA002AB1EF /* GuardianManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B35A2BE25425ADA002AB1EF /* GuardianManager.swift */; };
@@ -45,8 +47,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				6B35A5D825428F9D002AB1EF /* CryptoSwift.framework in Frameworks */,
+				692906A025BFDB680068DC88 /* StompClientLib.framework in Frameworks */,
 				6B35A5D525428F9C002AB1EF /* Alamofire.framework in Frameworks */,
 				6B35A5DA25428FA1002AB1EF /* SwiftyJSON.framework in Frameworks */,
+				692906A325BFDB730068DC88 /* SocketRocket.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

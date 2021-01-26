@@ -373,6 +373,7 @@ public class GuardianService{
 //                        self.notifyAuthStatus(status: status!)
                         
                         if status == AuthStatus.COMPLETE_VERIFICATION_OF_NODES.rawValue {
+                            var aa;
                             self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey, self.clientKey)
                         }
                         
@@ -394,7 +395,7 @@ public class GuardianService{
                 }
             })
           case RtCode.PUSH_LOGIN_SUCCESS.rawValue:
-            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey)
+            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey, self.clientKey)
           case RtCode.PUSH_LOGIN_FAIL.rawValue:
             self._authRequestFailed(RtCode.AUTH_FAIL, "")
 //          case RtCode.PUSH_LOGIN_CANCEL.rawValue:
