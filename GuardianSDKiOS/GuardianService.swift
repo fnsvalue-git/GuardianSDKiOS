@@ -224,13 +224,13 @@ public class GuardianService{
         
     public static let sharedInstance = GuardianService()
     
-    public var _authRequestSuccess : (RtCode, String, Int, String, String) -> Void
+    public var _authRequestSuccess : (RtCode, String, Int, String, String, String) -> Void
     public var _authRequestProcess : (String) -> Void
     public var _authRequestFailed : (RtCode, String) -> Void
     public var _onSubscribeAuthStatus : (String) -> Void
     
     private init() {
-        func initOnSuccess(rtcode: RtCode, rtMsg: String, authType: Int, connectIp: String, userKey: String) -> Void{}
+        func initOnSuccess(rtcode: RtCode, rtMsg: String, authType: Int, connectIp: String, userKey: String, clientKey: String) -> Void{}
         func initOnProcess(status : String) -> Void{}
         func initOnFailed(rtcode: RtCode, rtMsg: String) -> Void{}
         func initOnSubscribeAuthStatus(status : String) -> Void{}
@@ -373,7 +373,7 @@ public class GuardianService{
 //                        self.notifyAuthStatus(status: status!)
                         
                         if status == AuthStatus.COMPLETE_VERIFICATION_OF_NODES.rawValue {
-                            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey)
+                            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey, self.clientKey)
                         }
                         
                         if status! != AuthStatus.AUTH_COMPLETED.rawValue ||
@@ -491,7 +491,7 @@ public class GuardianService{
         })
     }
     
-    public func requestAuthRequest(onSuccess: @escaping(RtCode, String, Int, String, String)-> Void, onProcess: @escaping(String) -> Void,  onFailed: @escaping(RtCode, String)-> Void) {
+    public func requestAuthRequest(onSuccess: @escaping(RtCode, String, Int, String, String, String)-> Void, onProcess: @escaping(String) -> Void,  onFailed: @escaping(RtCode, String)-> Void) {
         let apiUrl = "auth/nodes"
         
         let enCodeCK = encryptAES256(value: self.channelKey, seckey: self.channelKey)
