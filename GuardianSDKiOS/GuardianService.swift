@@ -373,7 +373,6 @@ public class GuardianService{
 //                        self.notifyAuthStatus(status: status!)
                         
                         if status == AuthStatus.COMPLETE_VERIFICATION_OF_NODES.rawValue {
-                            var aa;
                             self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey, self.clientKey)
                         }
                         
