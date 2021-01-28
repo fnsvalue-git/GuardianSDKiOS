@@ -200,47 +200,64 @@ open class BiometricService{
         } else {
             let context = LAContext()
             context.localizedFallbackTitle = ""
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: strBioType, reply:{(success, error) in
-                if success {
-                    DispatchQueue.main.async {
-                        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
-                            if let domainState = context.evaluatedPolicyDomainState {
-                                if let strData = String(data: domainState.base64EncodedData(), encoding: .utf8) {
-                                    
-                                    if(self.hasRegisterBiometric()) {
-                                        KeychainService.updatePassword(service: getPackageName(), account: "biometrics", data: strData)
-                                    } else {
-                                        KeychainService.savePassword(service: getPackageName(), account: "biometrics", data: strData)
-                                    }
-                                    onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    DispatchQueue.main.async {
-                        let message: String
-                        switch error {
-                        case LAError.authenticationFailed?:
-                            message = "There was a problem verifying your identity."
-                        case LAError.userCancel?:
-                            message = "You pressed cancel."
-                        case LAError.userFallback?:
-                            message = "You pressed password."
-                        case LAError.biometryNotAvailable?:
-                            message = "Face ID/Touch ID is not available."
-                        case LAError.biometryNotEnrolled?:
-                            message = "Face ID/Touch ID is not set up."
-                        case LAError.biometryLockout?:
-                            message = "Face ID/Touch ID is locked."
-                        default:
-                            message = "Face ID/Touch ID may not be configured"
-                        }
+            
+            DispatchQueue.main.async {
+                if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+                    if let domainState = context.evaluatedPolicyDomainState {
+                        if let strData = String(data: domainState.base64EncodedData(), encoding: .utf8) {
                             
-                        onFailed(RtCode.BIOMETRIC_AUTH_FAILED, message)
+                            if(self.hasRegisterBiometric()) {
+                                KeychainService.updatePassword(service: getPackageName(), account: "biometrics", data: strData)
+                            } else {
+                                KeychainService.savePassword(service: getPackageName(), account: "biometrics", data: strData)
+                            }
+                            onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
+                        }
                     }
                 }
-            })
+            }
+            
+//            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: strBioType, reply:{(success, error) in
+//                if success {
+//                    DispatchQueue.main.async {
+//                        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+//                            if let domainState = context.evaluatedPolicyDomainState {
+//                                if let strData = String(data: domainState.base64EncodedData(), encoding: .utf8) {
+//
+//                                    if(self.hasRegisterBiometric()) {
+//                                        KeychainService.updatePassword(service: getPackageName(), account: "biometrics", data: strData)
+//                                    } else {
+//                                        KeychainService.savePassword(service: getPackageName(), account: "biometrics", data: strData)
+//                                    }
+//                                    onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
+//                                }
+//                            }
+//                        }
+//                    }
+//                } else {
+//                    DispatchQueue.main.async {
+//                        let message: String
+//                        switch error {
+//                        case LAError.authenticationFailed?:
+//                            message = "There was a problem verifying your identity."
+//                        case LAError.userCancel?:
+//                            message = "You pressed cancel."
+//                        case LAError.userFallback?:
+//                            message = "You pressed password."
+//                        case LAError.biometryNotAvailable?:
+//                            message = "Face ID/Touch ID is not available."
+//                        case LAError.biometryNotEnrolled?:
+//                            message = "Face ID/Touch ID is not set up."
+//                        case LAError.biometryLockout?:
+//                            message = "Face ID/Touch ID is locked."
+//                        default:
+//                            message = "Face ID/Touch ID may not be configured"
+//                        }
+//
+//                        onFailed(RtCode.BIOMETRIC_AUTH_FAILED, message)
+//                    }
+//                }
+//            })
         }
     }
     
