@@ -358,7 +358,7 @@ public class GuardianService{
           case RtCode.PUSH_LOGIN.rawValue:
               self.channelKey = messageDic["channel_key"] ?? ""
               self.blockKey = messageDic["block_key"] ?? ""
-            
+              callback(RtCode.AUTH_SUCCESS, "")
           case RtCode.PUSH_LOGIN_SUCCESS.rawValue:
             self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey, self.clientKey)
           case RtCode.PUSH_LOGIN_FAIL.rawValue:
@@ -478,7 +478,6 @@ public class GuardianService{
         StompSocketService.sharedInstance.connect(dataMap: socketDataMap, connectCallback: {(isConnect: Bool) -> Void in
             if isConnect {
                 print("stompwebsocket connect")
-                callback(RtCode.AUTH_SUCCESS, "")
                 StompSocketService.sharedInstance.subscribe(authProcessCallback: {(status : String?) -> Void in
                     print("stompwebsocket subscribe => \(status!)")
                     
@@ -499,7 +498,6 @@ public class GuardianService{
                         StompSocketService.sharedInstance.disconnect()
                         self.invalidateAuthTimeoutTimer()
                     }
-                    
                 })
             } else {
                 print("stompwebsocket disconnect")
