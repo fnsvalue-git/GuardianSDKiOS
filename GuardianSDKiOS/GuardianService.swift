@@ -359,40 +359,6 @@ public class GuardianService{
               self.channelKey = messageDic["channel_key"] ?? ""
               self.blockKey = messageDic["block_key"] ?? ""
             
-              var socketDataMap = getCommonParam()
-              socketDataMap["channelKey"] = self.channelKey
-              socketDataMap["deviceId"] = getUUid()
-            
-              StompSocketService.sharedInstance.connect(dataMap: socketDataMap, connectCallback: {(isConnect: Bool) -> Void in
-                if isConnect {
-                    print("stompwebsocket connect")
-                    callback(RtCode.AUTH_SUCCESS, "")
-                    StompSocketService.sharedInstance.subscribe(authProcessCallback: {(status : String?) -> Void in
-                        print("stompwebsocket subscribe => \(status!)")
-                        
-//                        self.notifyAuthStatus(status: status!)
-                        
-                        if status == AuthStatus.COMPLETE_VERIFICATION_OF_NODES.rawValue {
-                            self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey, self.clientKey)
-                        }
-                        
-                        if status! != AuthStatus.AUTH_COMPLETED.rawValue ||
-                            status! != AuthStatus.AUTH_FAILED.rawValue ||
-                            status! != AuthStatus.AUTH_CANCELED.rawValue {
-                            
-                            self._authRequestProcess(status!) //authRequest callback.
-                        }
-                        
-                        if status! == AuthStatus.AUTH_COMPLETED.rawValue || status! == AuthStatus.AUTH_FAILED.rawValue {
-                            StompSocketService.sharedInstance.disconnect()
-                            self.invalidateAuthTimeoutTimer()
-                        }
-                        
-                    })
-                } else {
-                    print("stompwebsocket disconnect")
-                }
-            })
           case RtCode.PUSH_LOGIN_SUCCESS.rawValue:
             self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey, self.clientKey)
           case RtCode.PUSH_LOGIN_FAIL.rawValue:
@@ -503,6 +469,42 @@ public class GuardianService{
         params["enCodeCK"] = enCodeCK
         params["enCodeBK"] = enCodeBK
         params["enCodeDK"] = enCodeDK
+        
+        // WebSocket 연결.
+        var socketDataMap = getCommonParam()
+        socketDataMap["channelKey"] = self.channelKey
+        socketDataMap["deviceId"] = getUUid()
+        
+        StompSocketService.sharedInstance.connect(dataMap: socketDataMap, connectCallback: {(isConnect: Bool) -> Void in
+            if isConnect {
+                print("stompwebsocket connect")
+                callback(RtCode.AUTH_SUCCESS, "")
+                StompSocketService.sharedInstance.subscribe(authProcessCallback: {(status : String?) -> Void in
+                    print("stompwebsocket subscribe => \(status!)")
+                    
+//                    self.notifyAuthStatus(status: status!)
+                    
+                    if status == AuthStatus.COMPLETE_VERIFICATION_OF_NODES.rawValue {
+                        self._authRequestSuccess(RtCode.AUTH_SUCCESS, "", self.authType, self.connectIp, self.userKey, self.clientKey)
+                    }
+                    
+                    if status! != AuthStatus.AUTH_COMPLETED.rawValue ||
+                        status! != AuthStatus.AUTH_FAILED.rawValue ||
+                        status! != AuthStatus.AUTH_CANCELED.rawValue {
+                        
+                        self._authRequestProcess(status!) //authRequest callback.
+                    }
+                    
+                    if status! == AuthStatus.AUTH_COMPLETED.rawValue || status! == AuthStatus.AUTH_FAILED.rawValue {
+                        StompSocketService.sharedInstance.disconnect()
+                        self.invalidateAuthTimeoutTimer()
+                    }
+                    
+                })
+            } else {
+                print("stompwebsocket disconnect")
+            }
+        })
         
         self._authRequestSuccess = onSuccess
         self._authRequestProcess = onProcess
