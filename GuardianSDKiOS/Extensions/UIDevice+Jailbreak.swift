@@ -6,8 +6,8 @@
 //  Copyright © 2021 fns_mac_pro. All rights reserved.
 //
 
-import Foundation
-import UIKit
+//import Foundation
+//import UIKit
 
 //public extension UIDevice {
 //    var isSimulator: Bool {
