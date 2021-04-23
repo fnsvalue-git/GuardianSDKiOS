@@ -15,9 +15,9 @@ open class Jailbreak {
     public init() {
     }
     
-    public func isJailBroken() -> Bool {
+    public func isAlreadyJailBroken() -> Bool {
         //        print("=== In Jailbreak : isJailBroken() ===")
-        if isSimulator() { return false }
+        if isInSimulator() { return false }
         if JailBrokenHelper.hasCydiaInstalled() { return true }
         if JailBrokenHelper.isContainsSuspiciousApps() { return true }
         if JailBrokenHelper.isSuspiciousSystemPathsExists() { return true }
@@ -25,14 +25,14 @@ open class Jailbreak {
         //        return UIDevice.current.isJailBroken
     }
     
-    public func isSimulator() -> Bool {
+    public func isInSimulator() -> Bool {
         //        print("=== In Jailbreak : isSimulator() ===")
         return TARGET_OS_SIMULATOR != 0
         //        return UIDevice.current.isSimulator
     }
 }
 
-private struct JailBrokenHelper {
+public struct JailBrokenHelper {
     static func hasCydiaInstalled() -> Bool {
         return UIApplication.shared.canOpenURL(URL(string: "cydia://")!)
     }
