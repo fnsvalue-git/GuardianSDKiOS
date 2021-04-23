@@ -16,7 +16,7 @@ open class PasscodeService {
     
     // passcodeAuthentication
     public func passcodeAuthentication(reason: String = "Input your passcode to authenticate") -> Bool {
-//        let reason = "Input your passcode to authenticate"
+        //        let reason = "Input your passcode to authenticate"
         
         let secAccessControlbject: SecAccessControl = SecAccessControlCreateWithFlags(
             kCFAllocatorDefault,
@@ -57,10 +57,10 @@ open class PasscodeService {
         // Check authentication status
         if (status == errSecSuccess)
         {
-//            print("Authentication Succeeded")
+            //            print("Authentication Succeeded")
             return  true
         } else {
-//            print("Authentication failed")
+            //            print("Authentication failed")
             return false
         }
     }
@@ -71,13 +71,13 @@ open class PasscodeService {
         let attributes = [kSecClass as String:kSecClassGenericPassword, kSecAttrService as String:"LocalDeviceServices", kSecAttrAccount as String:"NoAccount", kSecValueData as String:secret!, kSecAttrAccessible as String:kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly] as [String : Any]
         
         let status = SecItemAdd(attributes as CFDictionary, nil)
-//        print(status)
+        //        print(status)
         if status == 0 {
             SecItemDelete(attributes as CFDictionary)
-//            print("Has passcode")
+            //            print("Has passcode")
             return true
         }
-//        print("No Passcode")
+        //        print("No Passcode")
         return false
     }
     
@@ -86,10 +86,10 @@ open class PasscodeService {
         let myContext = LAContext()
         var authError: NSError? = nil
         if (myContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &authError)){
-//            print("Has passcode")
+            //            print("Has passcode")
             return true
         }else{
-//            print("No Passcode")
+            //            print("No Passcode")
             return false
         }
     }
