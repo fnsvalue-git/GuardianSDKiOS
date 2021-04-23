@@ -15,8 +15,8 @@ open class PasscodeService {
     public init() {}
     
     // passcodeAuthentication
-    public func passcodeAuthentication() -> Bool {
-        let reason = "Input your passcode to authenticate"
+    public func passcodeAuthentication(reason: String = "Input your passcode to authenticate") -> Bool {
+//        let reason = "Input your passcode to authenticate"
         
         let secAccessControlbject: SecAccessControl = SecAccessControlCreateWithFlags(
             kCFAllocatorDefault,
@@ -71,13 +71,13 @@ open class PasscodeService {
         let attributes = [kSecClass as String:kSecClassGenericPassword, kSecAttrService as String:"LocalDeviceServices", kSecAttrAccount as String:"NoAccount", kSecValueData as String:secret!, kSecAttrAccessible as String:kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly] as [String : Any]
         
         let status = SecItemAdd(attributes as CFDictionary, nil)
-        print(status)
+//        print(status)
         if status == 0 {
             SecItemDelete(attributes as CFDictionary)
-            print("Has passcode")
+//            print("Has passcode")
             return true
         }
-        print("No Passcode")
+//        print("No Passcode")
         return false
     }
     
