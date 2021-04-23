@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-public class Jailbreak {
+open class Jailbreak {
     
     public static let sharedInstance = Jailbreak()
     public init() {
