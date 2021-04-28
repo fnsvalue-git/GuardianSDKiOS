@@ -11,7 +11,7 @@ import LocalAuthentication
 
 open class PasscodeService {
     
-    public static let sharedInstance = BiometricService()
+    public static let sharedInstance = PasscodeService()
     
     public init() {}
     

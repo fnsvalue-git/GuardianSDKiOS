@@ -87,6 +87,7 @@ public enum RtCode : Int {
     case BIOMETRIC_ENROLLED_DUPLICATION = 9007
     case BIOMETRIC_ERROR = 9008
     case BIOMETRIC_AUTH_FAILED = 9009
+    case BIOMETRIC_PASSCODE = 9010
     
     case API_ERROR = 10001
 }
