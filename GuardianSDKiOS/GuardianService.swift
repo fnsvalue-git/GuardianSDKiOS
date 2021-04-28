@@ -842,10 +842,10 @@ public class GuardianService{
                 }
                 
                 let resultData = [String:Any]()
-                dic["isExist"] = authData["isExist"].boolValue ?? false
-                dic["clientKey"] = authData["clientKey"].string ?? ""
-                dic["siteURL"] = authData["siteURL"].string ?? ""
-                dic["timeout"] = authData["timeout"].string ?? ""
+                resultData["isExist"] = authData["isExist"].boolValue ?? false
+                resultData["clientKey"] = authData["clientKey"].string ?? ""
+                resultData["siteURL"] = authData["siteURL"].string ?? ""
+                resultData["timeout"] = authData["timeout"].string ?? ""
                 
                 onSuccess(RtCode.AUTH_SUCCESS, rtMsg, resultData)
                 
