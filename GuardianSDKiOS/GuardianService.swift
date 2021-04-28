@@ -393,6 +393,7 @@ public class GuardianService{
                 dic["name"] = authData["name"].string ?? ""
                 dic["email"] = authData["email"].string ?? ""
                 dic["authType"] = authData["authType"].string ?? ""
+                
                 onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
             } else if(rtCode == RtCode.MEMBER_NOT_REGISTER.rawValue){
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
@@ -565,6 +566,7 @@ public class GuardianService{
         }
         
         params["deviceId"] = getUUid()
+        params["isSecondaryCertification"] = isSecondaryCertification
         
         self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
             
