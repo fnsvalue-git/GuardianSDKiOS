@@ -9,7 +9,7 @@
 import Foundation
 import LocalAuthentication
 
-open class PasscodeService {
+public class PasscodeService {
     
     public static let sharedInstance = PasscodeService()
     
