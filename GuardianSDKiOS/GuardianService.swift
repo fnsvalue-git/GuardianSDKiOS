@@ -832,6 +832,9 @@ public class GuardianService{
         
         self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
             
+            let rtCode = data["rtCode"].intValue
+            let rtMsg = data["rtMsg"].string ?? ""
+            
             if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
                 guard let authData = data["data"] as? JSON else {
                     onFailed(RtCode.API_ERROR, rtMsg)
