@@ -392,6 +392,7 @@ public class GuardianService{
                 dic["userKey"] = authData["userKey"].string ?? ""
                 dic["name"] = authData["name"].string ?? ""
                 dic["email"] = authData["email"].string ?? ""
+                dic["authType"] = authData["authType"].string ?? ""
                 onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
             } else if(rtCode == RtCode.MEMBER_NOT_REGISTER.rawValue){
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
@@ -552,10 +553,17 @@ public class GuardianService{
         self.authTimeoutTimer.invalidate()
     }
     
-    public func requestAuthResult(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
+    public func requestAuthResult(isSecondaryCertification : Bool, onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         let apiUrl = "auth/complete"
         
-        var params = getCommonParam()
+        
+        var params = Dictionary<String, Any>()
+        
+        let commonParam = self.getCommonParam()
+        for key in commonParam.keys {
+            params[key] = commonParam[key]
+        }
+        
         params["deviceId"] = getUUid()
         
         self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
@@ -815,7 +823,31 @@ public class GuardianService{
         })
     }
     
-    private func callHttpGet(params: Dictionary<String,String>,
+    public func isAuthExist(userKey: String, onSuccess: @escaping(RtCode, String, [String:Any])-> Void, onFailed: @escaping(RtCode, String)-> Void) {
+        let apiUrl = "auth/exist"
+        
+        var params = getCommonParam()
+        params["deviceId"] = getUUid()
+        params["userKey"] = userKey
+        
+        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+            
+            let rtCode = data["rtCode"].intValue
+            let rtMsg = data["rtMsg"].string ?? ""
+            let resultData = data["data"]
+            
+            if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, resultData)
+            } else {
+                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+            }
+            
+        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+            onFailed(RtCode.API_ERROR, errorMsg)
+        })
+    }
+    
+    private func callHttpGet(params: Dictionary<String,Any>,
                             api: String,
                             successCallBack : @escaping(JSON) -> Void,
                             errorCallBack: @escaping(Int, String) -> Void) {
