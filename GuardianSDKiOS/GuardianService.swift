@@ -832,12 +832,20 @@ public class GuardianService{
         
         self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
             
-            let rtCode = data["rtCode"].intValue
-            let rtMsg = data["rtMsg"].string ?? ""
-            let resultData = data["data"]
-            
             if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+                guard let authData = data["data"] as? JSON else {
+                    onFailed(RtCode.API_ERROR, rtMsg)
+                    return
+                }
+                
+                let resultData = [String:Any]()
+                dic["isExist"] = authData["isExist"].boolValue ?? false
+                dic["clientKey"] = authData["clientKey"].string ?? ""
+                dic["siteURL"] = authData["siteURL"].string ?? ""
+                dic["timeout"] = authData["timeout"].string ?? ""
+                
                 onSuccess(RtCode.AUTH_SUCCESS, rtMsg, resultData)
+                
             } else {
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
