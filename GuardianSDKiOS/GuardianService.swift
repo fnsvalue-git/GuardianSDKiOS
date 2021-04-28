@@ -841,7 +841,7 @@ public class GuardianService{
                     return
                 }
                 
-                let resultData = [String:Any]()
+                var resultData = [String:Any]()
                 resultData["isExist"] = authData["isExist"].boolValue ?? false
                 resultData["clientKey"] = authData["clientKey"].string ?? ""
                 resultData["siteURL"] = authData["siteURL"].string ?? ""
