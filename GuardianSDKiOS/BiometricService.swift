@@ -57,8 +57,8 @@ open class BiometricService{
     public func authenticate(msg: String, onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String?)-> Void) {
         let initCode = initBiometric()
         if(initCode != .AUTH_SUCCESS) {
-            if(PasscodeService.sharedInstance.deviceHasPasscode()) {
-                let result = PasscodeService.sharedInstance.passcodeAuthentication()
+            if(PasscodeService().deviceHasPasscode()) {
+                let result = PasscodeService().passcodeAuthentication()
                 if(result) {
                     onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
                 }
@@ -117,8 +117,8 @@ open class BiometricService{
     public func hasNewBiometricEnrolled(onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         let initCode = initBiometric()
         if(initCode != .AUTH_SUCCESS) {
-            if(PasscodeService.sharedInstance.deviceHasPasscode()) {
-                let result = PasscodeService.sharedInstance.passcodeAuthentication()
+            if(PasscodeService().deviceHasPasscode()) {
+                let result = PasscodeService().passcodeAuthentication()
                 if(result) {
                     onSuccess(RtCode.BIOMETRIC_PASSCODE, "", self.getBiometricTypeList())
                 }
