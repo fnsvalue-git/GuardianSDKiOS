@@ -57,11 +57,17 @@ open class BiometricService{
     public func authenticate(msg: String, onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String?)-> Void) {
         let initCode = initBiometric()
         if(initCode != .AUTH_SUCCESS) {
-            if(PasscodeService().deviceHasPasscode()) {
-                let result = PasscodeService().passcodeAuthentication()
-                if(result) {
-                    onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
-                }
+//            if(PasscodeService().deviceHasPasscode()) {
+//                let result = PasscodeService().passcodeAuthentication()
+//                if(result) {
+//                    onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
+//                }
+//            } else {
+//                onFailed(initCode, getLocalizationMessage(rtCode : initCode))
+//            }
+            let result = PasscodeService().passcodeAuthentication()
+            if(result) {
+                onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
             } else {
                 onFailed(initCode, getLocalizationMessage(rtCode : initCode))
             }
@@ -117,14 +123,15 @@ open class BiometricService{
     public func hasNewBiometricEnrolled(onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         let initCode = initBiometric()
         if(initCode != .AUTH_SUCCESS) {
-            if(PasscodeService().deviceHasPasscode()) {
-                let result = PasscodeService().passcodeAuthentication()
-                if(result) {
-                    onSuccess(RtCode.BIOMETRIC_PASSCODE, "", self.getBiometricTypeList())
-                }
-            } else {
-                onFailed(initCode, getLocalizationMessage(rtCode : initCode))
-            }
+            onSuccess(RtCode.BIOMETRIC_PASSCODE, "", self.getBiometricTypeList())
+//            if(PasscodeService().deviceHasPasscode()) {
+//                let result = PasscodeService().passcodeAuthentication()
+//                if(result) {
+//                    onSuccess(RtCode.BIOMETRIC_PASSCODE, "", self.getBiometricTypeList())
+//                }
+//            } else {
+//                onFailed(initCode, getLocalizationMessage(rtCode : initCode))
+//            }
         } else {
             if(!hasRegisterBiometric()) {
                 onFailed(RtCode.BIOMETRIC_NOT_ENROLLED_APP, getLocalizationMessage(rtCode : RtCode.BIOMETRIC_NOT_ENROLLED_APP))
