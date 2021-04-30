@@ -15,62 +15,105 @@ public class PasscodeService {
     
     public init() {}
     
+    // createKeyChainItem
+    public func createKeychainItem() -> Bool {
+         let stringData = "string data"
+         let theData = stringData.data(using: .utf8)
+         let accessControl = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlways, .devicePasscode, nil)
+         let query = [
+              kSecClass as String : kSecClassGenericPassword as String,
+              kSecAttrAccessControl as String : accessControl,
+              kSecAttrAccount as String : "myAccount",
+              kSecAttrService as String : "myService",
+              kSecValueData as String : theData!
+         ] as [String: Any]
+
+         let status = SecItemAdd(query as CFDictionary, nil)
+         if status == noErr || status == errSecDuplicateItem {
+              print("successfully added passcode-protected item to keychain")
+         }
+         return status == noErr || status == errSecDuplicateItem
+    }
+    
     // passcodeAuthentication
     public func passcodeAuthentication(reason: String = "Input your passcode to authenticate") -> Bool {
         
         //        print("In passcodeAuthentication")
         
-        let secAccessControlObject: SecAccessControl = SecAccessControlCreateWithFlags(
-            kCFAllocatorDefault,
-            kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
-            .devicePasscode,
-            nil
-        )!
+        var success = createKeychainItem()
+             if success {
+//                  var dataTypeRef:AnyObject?
+                  let retrieveQuery: NSDictionary = [
+                       kSecClass as String : kSecClassGenericPassword as String,
+                       kSecAttrAccount as String : "myAccount",
+                       kSecAttrService as String : "myService",
+                    kSecReturnData as String : kCFBooleanTrue,
+                       kSecMatchLimit as String : kSecMatchLimitOne,
+                    kSecUseOperationPrompt as String : reason
+                  ] as NSDictionary
+                  let status = SecItemCopyMatching(retrieveQuery as CFDictionary, nil)
+                  success = (status == errSecSuccess)
+//                print("=== \(success) ===")
+                  if status == errSecUserCanceled {
+                       print("user canceled authentication")
+                  }
+             }
+             return success
         
         
-//                print(secAccessControlObject)
-//                let dataToStore = "AnyData".data(using: .utf8)!
+        //
         
-        
-//                let insertQuery: NSDictionary = [
-//                    kSecClass: kSecClassGenericPassword,
-//                    kSecAttrAccessControl: secAccessControlObject,
-//                    kSecAttrService: "PasscodeAuthentication",
-//                    kSecValueData: dataToStore as Any,
-//                ]
-        
-//                let insertStatus = SecItemAdd(insertQuery as CFDictionary, nil)
-        
-//                SecItemDelete(insertQuery as CFDictionary)
-        
-        
-        let query: NSDictionary = [
-            kSecClass:  kSecClassGenericPassword,
-            kSecAttrAccessControl: secAccessControlObject,
-            kSecAttrService  : "PasscodeAuthentication",
-            kSecUseOperationPrompt : reason
-        ]
-        
-//        SecItemDelete(query as CFDictionary)
-        
-        
-        //        print(query)
-        
-//        var typeRef : CFTypeRef?
-        
-        
-        let status: OSStatus = SecItemCopyMatching(query, nil) //This will prompt the passcode.
-        
-        // Check authentication status
-        if (status == errSecSuccess)
-        {
-            print("Authentication Succeeded")
-            return  true
-        } else {
-            print("Authentication failed, OSStatus : \(status)")
-            
-            return false
-        }
+//        let secAccessControlObject: SecAccessControl = SecAccessControlCreateWithFlags(
+//            kCFAllocatorDefault,
+//            kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
+//            .devicePasscode,
+//            nil
+//        )!
+//
+//
+////                print(secAccessControlObject)
+////                let dataToStore = "AnyData".data(using: .utf8)!
+//
+//
+////                let insertQuery: NSDictionary = [
+////                    kSecClass: kSecClassGenericPassword,
+////                    kSecAttrAccessControl: secAccessControlObject,
+////                    kSecAttrService: "PasscodeAuthentication",
+////                    kSecValueData: dataToStore as Any,
+////                ]
+//
+////                let insertStatus = SecItemAdd(insertQuery as CFDictionary, nil)
+//
+////                SecItemDelete(insertQuery as CFDictionary)
+//
+//
+//        let query: NSDictionary = [
+//            kSecClass:  kSecClassGenericPassword,
+//            kSecAttrAccessControl: secAccessControlObject,
+//            kSecAttrService  : "PasscodeAuthentication",
+//            kSecUseOperationPrompt : reason
+//        ]
+//
+////        SecItemDelete(query as CFDictionary)
+//
+//
+//        //        print(query)
+//
+////        var typeRef : CFTypeRef?
+//
+//
+//        let status: OSStatus = SecItemCopyMatching(query, nil) //This will prompt the passcode.
+//
+//        // Check authentication status
+//        if (status == errSecSuccess)
+//        {
+//            print("Authentication Succeeded")
+//            return  true
+//        } else {
+//            print("Authentication failed, OSStatus : \(status)")
+//
+//            return false
+//        }
     }
     
     public func deviceHasPasscode() -> Bool {
