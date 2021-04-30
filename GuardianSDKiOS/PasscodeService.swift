@@ -20,49 +20,51 @@ public class PasscodeService {
         
         //        print("In passcodeAuthentication")
         
-//        let secAccessControlObject: SecAccessControl = SecAccessControlCreateWithFlags(
-//            kCFAllocatorDefault,
-//            kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
-//            .devicePasscode,
-//            nil
-//        )!
-        //        print(secAccessControlObject)
-        //        let dataToStore = "AnyData".data(using: .utf8)!
-        //
-        //
-        //        let insertQuery: NSDictionary = [
-        //            kSecClass: kSecClassGenericPassword,
-        //            kSecAttrAccessControl: secAccessControlObject,
-        //            kSecAttrService: "PasscodeAuthentication",
-        //            kSecValueData: dataToStore as Any,
-        //        ]
-        //
-        //        let insertStatus = SecItemAdd(insertQuery as CFDictionary, nil)
+        let secAccessControlObject: SecAccessControl = SecAccessControlCreateWithFlags(
+            kCFAllocatorDefault,
+            kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
+            .devicePasscode,
+            nil
+        )!
         
-        //        SecItemDelete(insertQuery as CFDictionary)
+        
+//                print(secAccessControlObject)
+//                let dataToStore = "AnyData".data(using: .utf8)!
+        
+        
+//                let insertQuery: NSDictionary = [
+//                    kSecClass: kSecClassGenericPassword,
+//                    kSecAttrAccessControl: secAccessControlObject,
+//                    kSecAttrService: "PasscodeAuthentication",
+//                    kSecValueData: dataToStore as Any,
+//                ]
+        
+//                let insertStatus = SecItemAdd(insertQuery as CFDictionary, nil)
+        
+//                SecItemDelete(insertQuery as CFDictionary)
         
         
         let query: NSDictionary = [
             kSecClass:  kSecClassGenericPassword,
-//            kSecAttrAccessControl: secAccessControlObject,
+            kSecAttrAccessControl: secAccessControlObject,
             kSecAttrService  : "PasscodeAuthentication",
             kSecUseOperationPrompt : reason
         ]
         
+//        SecItemDelete(query as CFDictionary)
+        
         
         //        print(query)
         
-        var typeRef : CFTypeRef?
+//        var typeRef : CFTypeRef?
         
         
-        let status: OSStatus = SecItemCopyMatching(query, &typeRef) //This will prompt the passcode.
-        
-        //        print(status)
+        let status: OSStatus = SecItemCopyMatching(query, nil) //This will prompt the passcode.
         
         // Check authentication status
         if (status == errSecSuccess)
         {
-//            print("Authentication Succeeded")
+            print("Authentication Succeeded")
             return  true
         } else {
             print("Authentication failed, OSStatus : \(status)")
