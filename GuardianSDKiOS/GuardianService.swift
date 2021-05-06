@@ -201,11 +201,7 @@ func getUUid() -> String {
 func getPackageName() -> String {
     let packageName = Bundle.main.bundleIdentifier as? String ?? "com.fnsvalue.GuardianCCS"
     
-    if packageName == "com.tm.bsa.prod" {
-        return "com.tm.bsa"
-    } else {
-        return packageName
-    }
+    return packageName
 }
 
 func getUserToken() -> String {
