@@ -198,7 +198,7 @@ func getUUid() -> String {
     return trimStr
 }
 
-public func getPackageName() -> String {
+func getPackageName() -> String {
     let packageName = Bundle.main.bundleIdentifier as? String ?? "com.fnsvalue.GuardianCCS"
     
     if packageName == "com.tm.bsa.prod" {
