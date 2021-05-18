@@ -742,7 +742,7 @@ public class GuardianService{
                 params["deiceManufacturer"] = "apple"
                 params["deviceName"] = Device.current.description
                 
-                self.callHttpPut(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+                self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
                     let rtCode = data["rtCode"].intValue
                     let rtMsg = data["rtMsg"].string ?? ""
                     
