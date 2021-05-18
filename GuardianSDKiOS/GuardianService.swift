@@ -14,6 +14,7 @@ import AVFoundation
 import SwiftyJSON
 import DeviceKit
 
+//MARK: - RtCode
 public enum RtCode : Int {
     case AUTH_SUCCESS = 0
     case AUTH_PROCESSING = 2010
@@ -92,6 +93,7 @@ public enum RtCode : Int {
     case API_ERROR = 10001
 }
 
+//MARK: - PushTarget
 public enum PushTarget : String {
     case PUSH_TARGET_AUTH = "1000"
     case PUSH_TARGET_KEY_IN = "1006"
@@ -100,6 +102,7 @@ public enum PushTarget : String {
     case PUSH_TARGET_FAIL = "1003"
 }
 
+//MARK: - NotipicationId
 public enum NotipicationId : String {
     case NOTI_ID_AUTH = "GUARDIAN_AHTH"
     case NOTI_ID_SUCCESS = "GUARDIAN_SUCCESS"
@@ -107,6 +110,8 @@ public enum NotipicationId : String {
     case NOTI_ID_CANCEL = "GUARDIAN_CANCEL"
 }
 
+
+//MARK: - AuthStatus
 public enum AuthStatus : String {
     /**
      * 인증시작 요청 by Web
@@ -167,14 +172,14 @@ public enum PushState {
     case deviceCheck,keyIn
 }
 
-// 인증 결과 전달을 위한 delegate
+//MARK: - 인증 결과 전달을 위한 delegate
 public protocol AuthCallBack: class {
     func onFailed(errorCode: Int,errorMsg: String)
     func onSuccess(channelKey: String)
     func onCancel()
 }
 
-// unwind 를 위한 delegate
+//MARK: - unwind 를 위한 delegate
 public protocol UnwindCallBack: class {
     func onBack()
 }
@@ -222,6 +227,7 @@ public protocol AuthObserver: class {
     func onAuthentication(status : String)
 }
 
+//MARK: - GuardianService Class
 public class GuardianService{
         
     public static let sharedInstance = GuardianService()
@@ -374,6 +380,7 @@ public class GuardianService{
     
     }
     
+    //MARK: - requestMember
     public func requestMember(onSuccess: @escaping(RtCode, String, [String:String])-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         let apiUrl = "device/check"
         var params = getCommonParam()
@@ -388,18 +395,21 @@ public class GuardianService{
                 return
             }
             
+            var dic = [String:String]()
+            
             if (rtCode == RtCode.AUTH_SUCCESS.rawValue) {
-                var dic = [String:String]()
                 dic["userKey"] = authData["userKey"].string ?? ""
                 dic["name"] = authData["name"].string ?? ""
                 dic["email"] = authData["email"].string ?? ""
                 dic["authType"] = authData["authType"].string ?? ""
                 
                 onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
-            } else if(rtCode == RtCode.MEMBER_NOT_REGISTER.rawValue){
-                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
-            } else {
-                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+            } else if (rtCode == RtCode.AUTH_MEMBER_STATUS_WITHDRAW.rawValue) {
+                dic["uptDt"] = authData["uptDt"].string ?? ""
+                
+                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
+            } else{
+                onSuccess(RtCode(rawValue: rtCode)!, rtMsg, dic)
             }
             
         }, errorCallBack: {(errorCode, errorMsg) -> Void in
@@ -699,6 +709,54 @@ public class GuardianService{
         }
       }
     }
+    
+    //MARK: - To recover withdrawn member - 탈퇴 멤버 복구
+    public func recoveryMember(memberObject : Dictionary<String, Any>, onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
+      
+      let packageName = getPackageName()
+      let deviceId =  "\(packageName)\(UIDevice.current.identifierForVendor!.uuidString)"
+      KeychainService.updatePassword(service: packageName, account:"deviceId",data:deviceId)
+    
+      DispatchQueue.main.async {
+        DeviceInfoService().getDeviceInfo{ (data:Dictionary<String, Any>) in
+            let userKey = memberObject["userKey"] as? String ?? ""
+            let apiUrl = "users/\(userKey)/cancel"
+          
+            var params = data
+            
+            let commonParam = self.getCommonParam()
+            for key in commonParam.keys {
+                params[key] = commonParam[key]
+            }
+            
+            for key in memberObject.keys {
+                params[key] = memberObject[key]
+            }
+            
+            params["deviceId"] = getUUid()
+            params["appPackage"] = getPackageName()
+            params["os"] = "CMMDOS002"
+            params["osVersion"] = getOSVersion()
+            params["appVersion"] = getAppVersion()
+            params["deiceManufacturer"] = "apple"
+            params["deviceName"] = Device.current.description
+            
+            self.callHttpPut(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+                let rtCode = data["rtCode"].intValue
+                let rtMsg = data["rtMsg"].string ?? ""
+                
+                if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+                    onSuccess(RtCode.AUTH_SUCCESS, rtMsg)
+                } else {
+                    self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+                }
+                
+            }, errorCallBack: {(errorCode, errorMsg) -> Void in
+                onFailed(RtCode.API_ERROR, errorMsg)
+            })
+        }
+      }
+    }
   
   public func requestAuthSms(phoneNum : String, onSuccess: @escaping(RtCode, String, Int)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
       let apiUrl = "sms"
@@ -861,6 +919,7 @@ public class GuardianService{
         })
     }
     
+    //MARK: - callHttpGet
     private func callHttpGet(params: Dictionary<String,Any>,
                             api: String,
                             successCallBack : @escaping(JSON) -> Void,
@@ -923,6 +982,7 @@ public class GuardianService{
         }
     }
     
+    //MARK: - callHttpPost
     private func callHttpPost(params: Dictionary<String,Any>,
                             api: String,
                             successCallBack : @escaping(JSON) -> Void,
