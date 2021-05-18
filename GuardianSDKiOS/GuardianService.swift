@@ -405,9 +405,9 @@ public class GuardianService{
                 
                 onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
             } else if (rtCode == RtCode.AUTH_MEMBER_STATUS_WITHDRAW.rawValue) {
+                print("in AUTH_MEMBER_STATUS_WITHDRAW")
                 dic["uptDt"] = authData["uptDt"].string ?? ""
-                
-                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
+                onSuccess(RtCode.AUTH_MEMBER_STATUS_WITHDRAW, rtMsg, dic)
             } else{
                 onSuccess(RtCode(rawValue: rtCode)!, rtMsg, dic)
             }
