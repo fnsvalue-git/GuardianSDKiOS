@@ -920,6 +920,160 @@ public class GuardianService{
         })
     }
     
+    //MARK: - callHttpMethod
+    /// Creates a `DataRequest` using the default `SessionManager` to retrieve the contents of the specified `url`,
+    /// `method`, `parameters`, `encoding` and `headers`.
+    ///
+    /// - parameter api:        The api, which will later be concatenated with `Domain.apiDomain` to create `url`.
+    /// - parameter method:     The HTTP method. `.get` by default.
+    /// - parameter params: The parameters cannot be `nil`.
+    /// - Parameter successCallBack: A callback function to retrieve `JSONResponse` when successfully fetching data.
+    /// - parameter errorCallBack: A callback function to retrieve `statusCode` in `Int` and `statusMessage` in `String` in case of failure
+    ///
+    public func callHttpMethod(params: Dictionary<String,Any>,
+                               api: String,
+                               method: HTTPMethod = .get,
+                               successCallBack : @escaping(JSON) -> Void,
+                               errorCallBack: @escaping(Int, String) -> Void){
+        
+        let url = Domain.apiDomain + api
+        let encodingMethod: ParameterEncoding = (method == .get) ? URLEncoding.default : JSONEncoding.default
+        
+        print("callHttpGet url => \(url)")
+        print("method => \(method)")
+        print("encodingMethod => \(encodingMethod)")
+        
+        Alamofire.request(url, method: method, parameters: params, encoding: encodingMethod).responseJSON { response in
+            guard response.result.isSuccess else {
+                var statusCode : Int! = response.response?.statusCode ?? RtCode.API_ERROR.rawValue
+                var statusMessage : String
+                
+                if let error = response.result.error as? AFError {
+                    statusCode = error._code // statusCode Private
+                    
+                    switch error {
+                    case .invalidURL(let url):
+                        statusMessage = "Invalid URL, url: \(url)"
+                    case .parameterEncodingFailed(let reason):
+                        statusMessage = "Parameter encoding failed, reason: \(reason)"
+                    case .multipartEncodingFailed(let reason):
+                        statusMessage = "Multipart encoding failed, reason: \(reason)"
+                    case .responseValidationFailed(let reason):
+                        statusMessage = "Response validation failed, reason: \(reason)"
+                        //                        statusMessage = "Failure Reason"
+                        switch reason {
+                        case .dataFileNil, .dataFileReadFailed:
+                            statusMessage = "Downloaded file could not be read"
+                        case .missingContentType(let acceptableContentTypes):
+                            statusMessage = "Content Type Missing: \(acceptableContentTypes)"
+                        case .unacceptableContentType(let acceptableContentTypes, let responseContentType):
+                            statusMessage = "Response content type: \(responseContentType) was unacceptable: \(acceptableContentTypes)"
+                        case .unacceptableStatusCode(let code):
+                            statusMessage = "Response status code was unacceptable: \(code)"
+                            statusCode = code
+                        }
+                    case .responseSerializationFailed(let reason):
+                        statusMessage = "Response serialization failed: \(error.localizedDescription), reason: \(reason)"
+                        statusMessage = "Failure Reason"
+                    // statusCode = 3840 ???? maybe..
+                    }
+                    statusMessage = "Underlying error"
+                } else if let error = response.result.error as? URLError {
+                    statusMessage = "URLError occurred, error: \(error)"
+                    
+                } else {
+                    statusMessage = "Unknown error"
+                }
+                
+                errorCallBack(statusCode, statusMessage)
+                return
+            }
+            if let data = response.result.value {
+                let json = JSON(data)
+                successCallBack(json)
+            }
+        }
+        
+    }
+    
+    //MARK: - callHttpUrl
+    /// Creates a `DataRequest` using the default `SessionManager` to retrieve the contents of the specified `url`,
+    /// `method`, `parameters`, `encoding` and `headers`.
+    ///
+    /// - parameter url:        The URL.
+    /// - parameter method:     The HTTP method. `.get` by default.
+    /// - parameter params: The parameters. `nil` by default.
+    /// - parameter headers: The headers. `nil` by default
+    /// - Parameter successCallBack: A callback function to retrieve JSON response when successfully fetching data.
+    /// - parameter errorCallBack: A callback function to retrieve `statusCode` in `Int` and `statusMessage` in `String` in case of failure
+    ///
+    public func callHttpUrl(params: Dictionary<String,Any>?,
+                            method: HTTPMethod = .get,
+                            url: String,
+                            headers: HTTPHeaders? = nil,
+                            successCallBack : @escaping(JSON) -> Void,
+                            errorCallBack: @escaping(Int, String) -> Void){
+        
+        let encodingMethod: ParameterEncoding = (method == .get) ? URLEncoding.default : JSONEncoding.default
+        
+        print("callHttpGet url => \(url)")
+        print("method => \(method)")
+        print("encodingMethod => \(encodingMethod)")
+        print("headers => \(String(describing: headers))")
+        
+        Alamofire.request(url, method: method, parameters: params, encoding: encodingMethod, headers: headers).responseJSON { response in
+            guard response.result.isSuccess else {
+                var statusCode : Int! = response.response?.statusCode ?? RtCode.API_ERROR.rawValue
+                var statusMessage : String
+                
+                if let error = response.result.error as? AFError {
+                    statusCode = error._code // statusCode Private
+                    
+                    switch error {
+                    case .invalidURL(let url):
+                        statusMessage = "Invalid URL, url: \(url)"
+                    case .parameterEncodingFailed(let reason):
+                        statusMessage = "Parameter encoding failed, reason: \(reason)"
+                    case .multipartEncodingFailed(let reason):
+                        statusMessage = "Multipart encoding failed, reason: \(reason)"
+                    case .responseValidationFailed(let reason):
+                        statusMessage = "Response validation failed, reason: \(reason)"
+                        //                        statusMessage = "Failure Reason"
+                        switch reason {
+                        case .dataFileNil, .dataFileReadFailed:
+                            statusMessage = "Downloaded file could not be read"
+                        case .missingContentType(let acceptableContentTypes):
+                            statusMessage = "Content Type Missing: \(acceptableContentTypes)"
+                        case .unacceptableContentType(let acceptableContentTypes, let responseContentType):
+                            statusMessage = "Response content type: \(responseContentType) was unacceptable: \(acceptableContentTypes)"
+                        case .unacceptableStatusCode(let code):
+                            statusMessage = "Response status code was unacceptable: \(code)"
+                            statusCode = code
+                        }
+                    case .responseSerializationFailed(let reason):
+                        statusMessage = "Response serialization failed: \(error.localizedDescription), reason: \(reason)"
+                        statusMessage = "Failure Reason"
+                    // statusCode = 3840 ???? maybe..
+                    }
+                    statusMessage = "Underlying error"
+                } else if let error = response.result.error as? URLError {
+                    statusMessage = "URLError occurred, error: \(error)"
+                    
+                } else {
+                    statusMessage = "Unknown error"
+                }
+                
+                errorCallBack(statusCode, statusMessage)
+                return
+            }
+            if let data = response.result.value {
+                let json = JSON(data)
+                successCallBack(json)
+            }
+        }
+        
+    }
+    
     //MARK: - callHttpGet
     private func callHttpGet(params: Dictionary<String,Any>,
                              api: String,
@@ -1047,6 +1201,7 @@ public class GuardianService{
         
     }
     
+    //MARK: - callHttpPut
     private func callHttpPut(params: Dictionary<String,Any>,
                              api: String,
                              successCallBack : @escaping(JSON) -> Void,
@@ -1109,6 +1264,7 @@ public class GuardianService{
             }
     }
     
+    //MARK: - callHttpDelete
     private func callHttpDelete(params: Dictionary<String,String>,
                                 api: String,
                                 successCallBack : @escaping(JSON) -> Void,
