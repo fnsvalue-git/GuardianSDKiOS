@@ -386,8 +386,8 @@ public class GuardianService{
         var params = getCommonParam()
         params["deviceId"] = getUUid()
         
-        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data: JSON) -> Void in
-            
+        // method is .get by default
+        self.callHttpMethod(params: params, api: apiUrl) { (data: JSON) in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             guard let authData = data["data"] as? JSON else {
@@ -412,10 +412,41 @@ public class GuardianService{
             } else{
                 onSuccess(RtCode(rawValue: rtCode)!, rtMsg, dic)
             }
-            
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data: JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//            guard let authData = data["data"] as? JSON else {
+//                onFailed(RtCode.API_ERROR, rtMsg)
+//                return
+//            }
+//
+//            var dic = [String:String]()
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue) {
+//                dic["userKey"] = authData["userKey"].string ?? ""
+//                dic["name"] = authData["name"].string ?? ""
+//                dic["email"] = authData["email"].string ?? ""
+//                dic["authType"] = authData["authType"].string ?? ""
+//
+//                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
+//            } else if (rtCode == RtCode.AUTH_MEMBER_STATUS_WITHDRAW.rawValue) {
+//                // print("in AUTH_MEMBER_STATUS_WITHDRAW")
+//                dic["userKey"] = authData["userKey"].string ?? ""
+//                dic["uptDt"] = authData["uptDt"].string ?? ""
+//                onSuccess(RtCode.AUTH_MEMBER_STATUS_WITHDRAW, rtMsg, dic)
+//            } else{
+//                onSuccess(RtCode(rawValue: rtCode)!, rtMsg, dic)
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
     }
     
     public func requestClients(onSuccess: @escaping(RtCode, String, Array<[String:String]>)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
@@ -423,8 +454,7 @@ public class GuardianService{
         var params = getCommonParam()
         params["deviceId"] = getUUid()
         
-        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data: JSON) -> Void in
-            
+        self.callHttpMethod(params: params, api: apiUrl) { (data: JSON) -> Void in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
@@ -442,10 +472,34 @@ public class GuardianService{
             } else {
                 onFailed(RtCode.API_ERROR, "\(rtCode)")
             }
-            
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data: JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue) {
+//                var returnValue = Array<[String:String]>()
+//                let size = data["data"].count
+//                for i in 0..<size {
+//                    let client = data["data"].arrayValue[i]
+//                    var dic = [String:String]()
+//                    dic["clientName"] = client["clientName"].string ?? ""
+//                    dic["clientKey"] = client["clientKey"].string ?? ""
+//                    returnValue.append(dic)
+//                }
+//                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, returnValue)
+//            } else {
+//                onFailed(RtCode.API_ERROR, "\(rtCode)")
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
         
     }
     
@@ -458,8 +512,7 @@ public class GuardianService{
         params["osVersion"] = getOSVersion()
         params["appVersion"] = getAppVersion()
         
-        self.callHttpPut(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
-            
+        self.callHttpMethod(params: params, api: apiUrl, method: .put) { (data: JSON) in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             if(rtCode == RtCode.AUTH_SUCCESS.rawValue) {
@@ -467,9 +520,23 @@ public class GuardianService{
             } else {
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpPut(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//            if(rtCode == RtCode.AUTH_SUCCESS.rawValue) {
+//                onSuccess(RtCode(rawValue: rtCode)!, rtMsg)
+//            } else {
+//                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//            }
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
     }
     
     public func requestAuthRequest(onSuccess: @escaping(RtCode, String, Int, String, String, String)-> Void, onProcess: @escaping(String) -> Void,  onFailed: @escaping(RtCode, String)-> Void) {
@@ -525,8 +592,7 @@ public class GuardianService{
         
         self._authRequestProcess(AuthStatus.CREATE_CHANNEL.rawValue)
         
-        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
-            
+        self.callHttpMethod(params: params, api: apiUrl, method: .post) { (data: JSON) in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
@@ -549,10 +615,39 @@ public class GuardianService{
             } else {
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
-            
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+//                guard let authData = data["data"] as? JSON else {
+//                    onFailed(RtCode.API_ERROR, rtMsg)
+//                    return
+//                }
+//
+//                self._authRequestProcess(AuthStatus.SELECT_NODES.rawValue)
+//
+//                self.authType = authData["authType"].intValue
+//                self.connectIp = authData["connectIp"].string ?? ""
+//                self.userKey = authData["userKey"].string ?? ""
+//                let authTimeRemaining = authData["authTimeRemaining"].doubleValue
+//
+//                // Auth Timer start
+//                self.executeAuthTimeoutTimer(authTimeRemaining : authTimeRemaining)
+//
+//            } else {
+//                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
     }
     
     private func executeAuthTimeoutTimer(authTimeRemaining : Double) {
@@ -580,7 +675,7 @@ public class GuardianService{
         params["deviceId"] = getUUid()
         params["isSecondaryCertification"] = isSecondaryCertification
         
-        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+        self.callHttpMethod(params: params, api: apiUrl, method: .post) { (data: JSON) in
             
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
@@ -591,9 +686,25 @@ public class GuardianService{
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
             
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+//                onSuccess(RtCode.AUTH_SUCCESS, rtMsg)
+//            } else {
+//                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
     }
     
     public func requestAuthCancel(onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
@@ -602,7 +713,7 @@ public class GuardianService{
         var params = getCommonParam()
         params["deviceId"] = getUUid()
         
-        self.callHttpDelete(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+        self.callHttpMethod(params: params, api: apiUrl, method: .delete) { (data: JSON) in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
@@ -612,9 +723,24 @@ public class GuardianService{
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
             
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpDelete(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue) {
+//                onSuccess(RtCode.AUTH_SUCCESS, rtMsg)
+//            } else {
+//                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
     }
     
     public func requestMemberRegister(memberObject : Dictionary<String, Any>, onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
@@ -646,7 +772,7 @@ public class GuardianService{
                 params["deiceManufacturer"] = "apple"
                 params["deviceName"] = Device.current.description
                 
-                self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+                self.callHttpMethod(params: params, api: apiUrl, method: .post) { (data: JSON) in
                     let rtCode = data["rtCode"].intValue
                     let rtMsg = data["rtMsg"].string ?? ""
                     
@@ -655,11 +781,25 @@ public class GuardianService{
                     } else {
                         self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
                     }
-                    
-                }, errorCallBack: {(errorCode, errorMsg) -> Void in
-                    
+                } errorCallBack: { (errorCode, errorMsg) in
                     onFailed(RtCode.API_ERROR, errorMsg)
-                })
+                }
+
+                
+//                self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//                    let rtCode = data["rtCode"].intValue
+//                    let rtMsg = data["rtMsg"].string ?? ""
+//
+//                    if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+//                        onSuccess(RtCode.AUTH_SUCCESS, rtMsg)
+//                    } else {
+//                        self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//                    }
+//
+//                }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//
+//                    onFailed(RtCode.API_ERROR, errorMsg)
+//                })
             }
         }
     }
@@ -694,7 +834,7 @@ public class GuardianService{
                 params["deiceManufacturer"] = "apple"
                 params["deviceName"] = Device.current.description
                 
-                self.callHttpPut(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+                self.callHttpMethod(params: params, api: apiUrl, method: .put) { (data: JSON) in
                     let rtCode = data["rtCode"].intValue
                     let rtMsg = data["rtMsg"].string ?? ""
                     
@@ -703,10 +843,24 @@ public class GuardianService{
                     } else {
                         self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
                     }
-                    
-                }, errorCallBack: {(errorCode, errorMsg) -> Void in
+                } errorCallBack: { (errorCode, errorMsg) in
                     onFailed(RtCode.API_ERROR, errorMsg)
-                })
+                }
+
+                
+//                self.callHttpPut(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//                    let rtCode = data["rtCode"].intValue
+//                    let rtMsg = data["rtMsg"].string ?? ""
+//
+//                    if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+//                        onSuccess(RtCode.AUTH_SUCCESS, rtMsg)
+//                    } else {
+//                        self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//                    }
+//
+//                }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//                    onFailed(RtCode.API_ERROR, errorMsg)
+//                })
             }
         }
     }
@@ -742,7 +896,7 @@ public class GuardianService{
                 params["deiceManufacturer"] = "apple"
                 params["deviceName"] = Device.current.description
                 
-                self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+                self.callHttpMethod(params: params, api: apiUrl, method: .post) { (data: JSON) in
                     let rtCode = data["rtCode"].intValue
                     let rtMsg = data["rtMsg"].string ?? ""
                     
@@ -751,10 +905,24 @@ public class GuardianService{
                     } else {
                         self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
                     }
-                    
-                }, errorCallBack: {(errorCode, errorMsg) -> Void in
+                } errorCallBack: { (errorCode, errorMsg) in
                     onFailed(RtCode.API_ERROR, errorMsg)
-                })
+                }
+
+                
+//                self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//                    let rtCode = data["rtCode"].intValue
+//                    let rtMsg = data["rtMsg"].string ?? ""
+//
+//                    if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+//                        onSuccess(RtCode.AUTH_SUCCESS, rtMsg)
+//                    } else {
+//                        self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//                    }
+//
+//                }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//                    onFailed(RtCode.API_ERROR, errorMsg)
+//                })
             }
         }
     }
@@ -764,8 +932,7 @@ public class GuardianService{
         var params = getCommonParam()
         params["phoneNum"] = phoneNum
         
-        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
-            
+        self.callHttpMethod(params: params, api: apiUrl, method: .post) { (data: JSON) in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
@@ -781,10 +948,32 @@ public class GuardianService{
             } else {
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
-            
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//
+//            guard let authData = data["data"] as? JSON else {
+//                onFailed(RtCode.API_ERROR, rtMsg)
+//                return
+//            }
+//
+//            let seq = authData["seq"].intValue
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+//                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, seq)
+//            } else {
+//                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
     }
     
     public func verifySms(phoneNum : String, authNum: String, seq: String,
@@ -795,8 +984,7 @@ public class GuardianService{
         params["authNum"] = authNum
         params["seq"] = seq
         
-        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
-            
+        self.callHttpMethod(params: params, api: apiUrl, method: .post) { (data: JSON) in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
@@ -812,10 +1000,32 @@ public class GuardianService{
             } else {
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
-            
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//
+//            guard let verifyData = data["data"] as? JSON else {
+//                onFailed(RtCode.API_ERROR, rtMsg)
+//                return
+//            }
+//
+//            let result = verifyData["result"].boolValue
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+//                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, result)
+//            } else {
+//                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
         
     }
     
@@ -823,8 +1033,7 @@ public class GuardianService{
         let apiUrl = "me/\(self.clientKey)/member/\(userKey)/check"
         let params = getCommonParam()
         
-        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data: JSON) -> Void in
-            
+        self.callHttpMethod(params: params, api: apiUrl) { (data: JSON) in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
@@ -833,10 +1042,25 @@ public class GuardianService{
             } else {
                 onFailed(RtCode.API_ERROR, "\(rtCode)")
             }
-            
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data: JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue) {
+//                onSuccess(RtCode.AUTH_SUCCESS, rtMsg)
+//            } else {
+//                onFailed(RtCode.API_ERROR, "\(rtCode)")
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
     }
     
     public func requestVerifyIcon(icons: String, onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
@@ -846,8 +1070,7 @@ public class GuardianService{
         params["deviceId"] = getUUid()
         params["iconSelect"] = icons
         
-        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
-            
+        self.callHttpMethod(params: params, api: apiUrl, method: .post) { (data: JSON) in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
@@ -856,10 +1079,25 @@ public class GuardianService{
             } else {
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
-            
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+//                onSuccess(RtCode.AUTH_SUCCESS, rtMsg)
+//            } else {
+//                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
         
     }
     
@@ -869,8 +1107,7 @@ public class GuardianService{
         var params = getCommonParam()
         params["deviceId"] = getUUid()
         
-        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
-            
+        self.callHttpMethod(params: params, api: apiUrl, method: .post) { (data: JSON) in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
@@ -879,10 +1116,25 @@ public class GuardianService{
             } else {
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
-            
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpPost(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+//                onSuccess(RtCode.AUTH_SUCCESS, rtMsg)
+//            } else {
+//                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
     }
     
     public func isAuthExist(userKey: String, onSuccess: @escaping(RtCode, String, [String:Any])-> Void, onFailed: @escaping(RtCode, String)-> Void) {
@@ -892,8 +1144,7 @@ public class GuardianService{
         params["deviceId"] = getUUid()
         params["userKey"] = userKey
         
-        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
-            
+        self.callHttpMethod(params: params, api: apiUrl) { (data: JSON) in
             let rtCode = data["rtCode"].intValue
             let rtMsg = data["rtMsg"].string ?? ""
             
@@ -914,10 +1165,37 @@ public class GuardianService{
             } else {
                 self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
             }
-            
-        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+        } errorCallBack: { (errorCode, errorMsg) in
             onFailed(RtCode.API_ERROR, errorMsg)
-        })
+        }
+
+        
+//        self.callHttpGet(params: params, api: apiUrl, successCallBack: {(data:JSON) -> Void in
+//
+//            let rtCode = data["rtCode"].intValue
+//            let rtMsg = data["rtMsg"].string ?? ""
+//
+//            if (rtCode == RtCode.AUTH_SUCCESS.rawValue){
+//                guard let authData = data["data"] as? JSON else {
+//                    onFailed(RtCode.API_ERROR, rtMsg)
+//                    return
+//                }
+//
+//                var resultData = [String:Any]()
+//                resultData["isExist"] = authData["isExist"].boolValue ?? false
+//                resultData["clientKey"] = authData["clientKey"].string ?? ""
+//                resultData["siteURL"] = authData["siteURL"].string ?? ""
+//                resultData["timeout"] = authData["timeout"].string ?? ""
+//
+//                onSuccess(RtCode.AUTH_SUCCESS, rtMsg, resultData)
+//
+//            } else {
+//                self.onCallbackFailed(rtCode: RtCode(rawValue: rtCode)!, onFailed: onFailed)
+//            }
+//
+//        }, errorCallBack: {(errorCode, errorMsg) -> Void in
+//            onFailed(RtCode.API_ERROR, errorMsg)
+//        })
     }
     
     //MARK: - callHttpMethod
