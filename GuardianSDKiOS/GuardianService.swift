@@ -282,6 +282,16 @@ public class GuardianService{
         }
     }
     
+    private static var _qrId : String?
+    public var qrId : String? {
+        get  {
+            return GuardianService._qrId
+        }
+        set(value) {
+            GuardianService._qrId = value
+        }
+    }
+    
     private static var _authType : Int = 0
     public var authType : Int {
         get {
@@ -341,6 +351,10 @@ public class GuardianService{
     
     public func initClientKey(clientKey: String) {
         self.clientKey = clientKey
+    }
+    
+    public func initQrId(qrId: String) {
+        self.qrId = qrId
     }
     
     public func addObserver(_ observer: AuthObserver) {
@@ -539,6 +553,7 @@ public class GuardianService{
 //        })
     }
     
+    //MARK: - requestAuthRequest
     public func requestAuthRequest(onSuccess: @escaping(RtCode, String, Int, String, String, String)-> Void, onProcess: @escaping(String) -> Void,  onFailed: @escaping(RtCode, String)-> Void) {
         let apiUrl = "auth/nodes"
         
@@ -551,6 +566,13 @@ public class GuardianService{
         params["enCodeCK"] = enCodeCK
         params["enCodeBK"] = enCodeBK
         params["enCodeDK"] = enCodeDK
+        
+        // QR 인증 조건 추가.
+        if let mQrId = self.qrId {
+            if mQrId.count > 0 {
+                params["qrId"] = mQrId
+            }
+        }
         
         // WebSocket 연결.
         var socketDataMap = getCommonParam()
@@ -661,6 +683,7 @@ public class GuardianService{
         self.authTimeoutTimer.invalidate()
     }
     
+    //MARK: - requestAuthResult
     public func requestAuthResult(isSecondaryCertification : Bool, onSuccess: @escaping(RtCode, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         let apiUrl = "auth/complete"
         
@@ -674,6 +697,13 @@ public class GuardianService{
         
         params["deviceId"] = getUUid()
         params["isSecondaryCertification"] = isSecondaryCertification
+        
+        // QR 인증 조건 추가.
+        if let mQrId = self.qrId {
+            if mQrId.count > 0 {
+                params["qrId"] = mQrId
+            }
+        }
         
         self.callHttpMethod(params: params, api: apiUrl, method: .post) { (data: JSON) in
             
@@ -712,6 +742,13 @@ public class GuardianService{
         
         var params = getCommonParam()
         params["deviceId"] = getUUid()
+        
+        // QR 인증 조건 추가.
+        if let mQrId = self.qrId {
+            if mQrId.count > 0 {
+                params["qrId"] = mQrId
+            }
+        }
         
         self.callHttpMethod(params: params, api: apiUrl, method: .delete) { (data: JSON) in
             let rtCode = data["rtCode"].intValue

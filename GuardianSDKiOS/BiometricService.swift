@@ -65,6 +65,7 @@ open class BiometricService{
 //            } else {
 //                onFailed(initCode, getLocalizationMessage(rtCode : initCode))
 //            }
+            
             let result = PasscodeService().passcodeAuthentication()
             if(result) {
                 onSuccess(RtCode.AUTH_SUCCESS, "", self.getBiometricTypeList())
