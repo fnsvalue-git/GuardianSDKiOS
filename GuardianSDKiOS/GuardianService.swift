@@ -567,7 +567,6 @@ public class GuardianService{
         params["enCodeBK"] = enCodeBK
         params["enCodeDK"] = enCodeDK
         
-        // QR 인증 조건 추가.
         if let mQrId = self.qrId {
             if mQrId.count > 0 {
                 params["qrId"] = mQrId
@@ -698,7 +697,6 @@ public class GuardianService{
         params["deviceId"] = getUUid()
         params["isSecondaryCertification"] = isSecondaryCertification
         
-        // QR 인증 조건 추가.
         if let mQrId = self.qrId {
             if mQrId.count > 0 {
                 params["qrId"] = mQrId
@@ -743,7 +741,6 @@ public class GuardianService{
         var params = getCommonParam()
         params["deviceId"] = getUUid()
         
-        // QR 인증 조건 추가.
         if let mQrId = self.qrId {
             if mQrId.count > 0 {
                 params["qrId"] = mQrId
