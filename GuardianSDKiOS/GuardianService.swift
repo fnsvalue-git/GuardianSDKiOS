@@ -416,6 +416,7 @@ public class GuardianService{
                 dic["name"] = authData["name"].string ?? ""
                 dic["email"] = authData["email"].string ?? ""
                 dic["authType"] = authData["authType"].string ?? ""
+                dic["phoneNum"] = authData["phoneNum"].string ?? ""
                 
                 onSuccess(RtCode.AUTH_SUCCESS, rtMsg, dic)
             } else if (rtCode == RtCode.AUTH_MEMBER_STATUS_WITHDRAW.rawValue) {
