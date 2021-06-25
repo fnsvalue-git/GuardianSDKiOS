@@ -412,7 +412,7 @@ public class GuardianService{
             var dic = [String:String]()
             
             if (rtCode == RtCode.AUTH_SUCCESS.rawValue) {
-                print("AuthData : \(authData)")
+                print("AuthData from \(apiUrl) : \(authData)")
                 dic["userKey"] = authData["userKey"].string ?? ""
                 dic["name"] = authData["name"].string ?? ""
                 dic["email"] = authData["email"].string ?? ""
