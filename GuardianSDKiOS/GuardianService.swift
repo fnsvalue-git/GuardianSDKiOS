@@ -569,11 +569,19 @@ public class GuardianService{
         params["enCodeBK"] = enCodeBK
         params["enCodeDK"] = enCodeDK
         
+        print("requestAuthRequest qrId \(qrId)")
+        
         if let mQrId = self.qrId {
+            print("let mQrId : \(mQrId)")
             if mQrId.count > 0 {
+                print("mQrId.count : \(mQrId.count)")
                 params["qrId"] = mQrId
+                print("params[qrId] : \(params)")
+                
             }
         }
+        
+        print("Outside of If ", params["qrId"])
         
         // WebSocket 연결.
         var socketDataMap = getCommonParam()
