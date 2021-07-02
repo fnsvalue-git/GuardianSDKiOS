@@ -492,16 +492,23 @@ public class GuardianService{
     public func requestAuth(onSuccess: @escaping(RtCode, Dictionary<String,Any>, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         let apiUrl = "auth"
         var params = getCommonParam()
-        params["userKey"] = "Doggo"
-        params["deviceId"] = "Doggo"
+//        params["userKey"] = "Doggo"
+//        params["deviceId"] = "Doggo"
+        
+//        params["deviceId"] = getUUid()
+        params["deviceId"] = userKey
+        params["userKey"] = userKey
         
         self.callHttpMethod(params: params, api: apiUrl, method: .post) { (data: JSON) -> Void in
             
             var returnData = Dictionary<String, Any>()
             
-            returnData["userKey"] = JSON(data["data"]["userKey"]).string
-            returnData["connectIp"] = JSON(data["data"]["connectIp"]).string
-            returnData["authTimeRemaining"] = JSON(data["data"]["authTimeRemaining"]).int
+            self.channelKey = JSON(data["data"]["channelKey"]).string ?? ""
+//            self.userKey = JSON(data["data"]["userKey"]).string  ?? ""
+            
+            returnData["userKey"] = JSON(data["data"]["userKey"]).string  ?? ""
+            returnData["connectIp"] = JSON(data["data"]["connectIp"]).string  ?? ""
+            returnData["authTimeRemaining"] = JSON(data["data"]["authTimeRemaining"]).doubleValue
             returnData["iconBaseValue"] = JSON(data["data"]["iconBaseValue"]).int
             returnData["fingerBaseValue"] = JSON(data["data"]["fingerBaseValue"]).int
 
@@ -658,8 +665,38 @@ public class GuardianService{
 
     }
     
-    public func resultAuth() {
+    //MARK: - resultAuth 인증 결과
+    /// get result after authentication 인증 결과
+    /// - Parameters:
+    ///   - onSuccess: <#onSuccess description#>
+    ///   - onFailed: <#onFailed description#>
+    public func resultAuth(onSuccess: @escaping(RtCode, Dictionary<String,Any>, String)-> Void, onFailed: @escaping(RtCode, String)-> Void) {
         
+        let apiUrl = "auth"
+        
+        
+        var params = Dictionary<String, Any>() // clientKey, userKey, ChannelKey
+        let commonParam = self.getCommonParam()
+        // Get ClientKey
+        for key in commonParam.keys {
+            params[key] = commonParam[key]
+        }
+        
+        params["userKey"] = userKey // get userKey
+        params["channelKey"] = channelKey // get channelKey
+        
+        self.callHttpMethod(params: params, api: apiUrl) { (data: JSON) in
+            // TODO
+            var returnData = Dictionary<String, Any>()
+            returnData["data"] = data["data"].string ?? ""
+            returnData["rtCode"] = data["rtCode"].int
+            
+            onSuccess(RtCode.AUTH_SUCCESS, returnData, "Successfully getting the result")
+            
+        } errorCallBack: { errorCode, errorMsg in
+            onFailed(RtCode.API_ERROR, errorMsg)
+        }
+
     }
     
     
