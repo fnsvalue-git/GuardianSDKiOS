@@ -353,7 +353,7 @@ public class GuardianService{
         self.clientKey = clientKey
     }
     
-    public func initQrId(qrId: String) {
+    public func initQrId(qrId: String?) {
         self.qrId = qrId
     }
     
