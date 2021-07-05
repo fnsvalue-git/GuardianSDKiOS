@@ -690,7 +690,7 @@ public class GuardianService{
             var returnData = Dictionary<String, Any>()
             returnData["data"] = data["data"].string ?? ""
             returnData["rtCode"] = data["rtCode"].int
-            
+            self.channelKey = ""
             onSuccess(RtCode.AUTH_SUCCESS, returnData, "Successfully getting the result")
             
         } errorCallBack: { errorCode, errorMsg in
