@@ -15,10 +15,26 @@
 		6B35A2C625425ADA002AB1EF /* GuardianService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B35A2BF25425ADA002AB1EF /* GuardianService.swift */; };
 		6B35A2C725425ADA002AB1EF /* TranslationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B35A2C025425ADA002AB1EF /* TranslationModel.swift */; };
 		6B35A2C925425ADA002AB1EF /* LocalizationMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B35A2C225425ADA002AB1EF /* LocalizationMessage.swift */; };
+		8C1AC04D269FEBD800CB38D5 /* Pods_SDKTestingApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8CE31D832692F2ED00C038C2 /* Pods_SDKTestingApp.framework */; };
+		8C1AC04E269FEBD800CB38D5 /* Pods_SDKTestingApp.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8CE31D832692F2ED00C038C2 /* Pods_SDKTestingApp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		8C3CA97626313BB800E7C707 /* Jailbreak.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3CA97526313BB800E7C707 /* Jailbreak.swift */; };
 		8C6DA1752632482500264358 /* PasscodeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C6DA1742632482500264358 /* PasscodeService.swift */; };
 		8CE31D7B2692F0C100C038C2 /* TOTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CE31D7A2692F0C100C038C2 /* TOTP.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8C1AC057269FEBD800CB38D5 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				8C1AC04E269FEBD800CB38D5 /* Pods_SDKTestingApp.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		2333280223B4A4570005F329 /* KeyChainService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyChainService.swift; sourceTree = "<group>"; };
@@ -32,6 +48,13 @@
 		6B35A2C025425ADA002AB1EF /* TranslationModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TranslationModel.swift; sourceTree = "<group>"; };
 		6B35A2C125425ADA002AB1EF /* KeyChainService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyChainService.swift; sourceTree = "<group>"; };
 		6B35A2C225425ADA002AB1EF /* LocalizationMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalizationMessage.swift; sourceTree = "<group>"; };
+		8C1AC040269FEBD700CB38D5 /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8C1AC041269FEBD700CB38D5 /* CryptoSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CryptoSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8C1AC042269FEBD700CB38D5 /* DeviceKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = DeviceKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8C1AC043269FEBD700CB38D5 /* SocketRocket.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SocketRocket.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8C1AC044269FEBD700CB38D5 /* StompClientLib.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = StompClientLib.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8C1AC045269FEBD700CB38D5 /* SwiftOTP.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SwiftOTP.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8C1AC046269FEBD700CB38D5 /* SwiftyJSON.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SwiftyJSON.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8C3CA97526313BB800E7C707 /* Jailbreak.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Jailbreak.swift; sourceTree = "<group>"; };
 		8C6DA1742632482500264358 /* PasscodeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasscodeService.swift; sourceTree = "<group>"; };
 		8CE31D7A2692F0C100C038C2 /* TOTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOTP.swift; sourceTree = "<group>"; };
@@ -45,6 +68,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8C1AC04D269FEBD800CB38D5 /* Pods_SDKTestingApp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +115,13 @@
 		23ACF44A2333369300FA4246 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				8C1AC040269FEBD700CB38D5 /* Alamofire.framework */,
+				8C1AC041269FEBD700CB38D5 /* CryptoSwift.framework */,
+				8C1AC042269FEBD700CB38D5 /* DeviceKit.framework */,
+				8C1AC043269FEBD700CB38D5 /* SocketRocket.framework */,
+				8C1AC044269FEBD700CB38D5 /* StompClientLib.framework */,
+				8C1AC045269FEBD700CB38D5 /* SwiftOTP.framework */,
+				8C1AC046269FEBD700CB38D5 /* SwiftyJSON.framework */,
 				8CE31D872692F31100C038C2 /* SwiftOTP.framework */,
 				8CE31D832692F2ED00C038C2 /* Pods_SDKTestingApp.framework */,
 				8CE31D7F2692F2B200C038C2 /* SwiftyJSON.framework */,
@@ -120,6 +151,7 @@
 				23ACF42F233322B800FA4246 /* Sources */,
 				23ACF430233322B800FA4246 /* Frameworks */,
 				23ACF431233322B800FA4246 /* Resources */,
+				8C1AC057269FEBD800CB38D5 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -342,6 +374,7 @@
 					"$(BUILT_PRODUCTS_DIR)/SwiftyJSON",
 					"$(BUILT_PRODUCTS_DIR)/DeviceKit",
 					"$(BUILT_PRODUCTS_DIR)/SwiftOTP",
+					"$(BUILT_PRODUCTS_DIR)/SocketRocket",
 				);
 				INFOPLIST_FILE = GuardianSDKiOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -377,6 +410,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = GuardianSDKiOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
