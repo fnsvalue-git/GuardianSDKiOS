@@ -1888,7 +1888,7 @@ public func encryptAES256(value: String ,seckey: String) -> String {
         let aes = try AES(key: key, blockMode: CBC(iv:iv), padding: .pkcs5)
         let enc = try aes.encrypt(Array(value.utf8))
         
-        return enc.toBase64()!
+        return enc.toBase64()
     } catch {
         return "error"
     }
