@@ -9,7 +9,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "GuardianSDKiOS"
-  spec.version      = "1.1.51"
+  spec.version      = "1.1.52"
   spec.summary      = "A summary description of GuardianSDKiOS."
 
   spec.description  = "A Description of GuardianSDKiOS CocoaPads Framework"
@@ -31,6 +31,7 @@ Pod::Spec.new do |spec|
   spec.dependency 'SwiftyJSON'
   spec.dependency 'StompClientLib'
   spec.dependency 'DeviceKit'
+  spec.dependency 'SwiftOTP'
   spec.swift_version = '4.2'
 
 end

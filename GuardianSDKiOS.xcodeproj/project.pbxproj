@@ -404,7 +404,15 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(BUILT_PRODUCTS_DIR)/StompClientLib",
+					"$(BUILT_PRODUCTS_DIR)/CryptoSwift",
+					"$(BUILT_PRODUCTS_DIR)/Alamofire",
+					"$(BUILT_PRODUCTS_DIR)/SwiftyJSON",
+					"$(BUILT_PRODUCTS_DIR)/DeviceKit",
+					"$(BUILT_PRODUCTS_DIR)/SwiftOTP",
+					"$(BUILT_PRODUCTS_DIR)/SocketRocket",
+				);
 				INFOPLIST_FILE = GuardianSDKiOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
