@@ -9,8 +9,8 @@
 import Foundation
 import SwiftOTP
 
-public class TOTPService {
-    public static let sharedInstance = TOTPService()
+public class TotpService {
+    public static let sharedInstance = TotpService()
     
     
     public init() {}
